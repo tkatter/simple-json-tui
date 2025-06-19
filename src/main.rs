@@ -8,6 +8,7 @@ use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
 use std::error::Error;
+use std::fs::{DirBuilder, File};
 use std::io;
 
 mod app;
@@ -32,6 +33,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     //create app and run it
     let mut app = App::new();
+
+    // TODO: Create writeable tmp file
+    #[allow(unused_variables)]
+    let tmp_file = "";
+
     let res = run_app(&mut terminal, &mut app);
 
     // application post-run steps
@@ -317,4 +323,29 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             }
         }
     }
+}
+
+#[allow(dead_code)]
+fn create_tmp_file() -> Option<File> {
+    use std::fs::exists;
+    use std::path::PathBuf;
+
+    let home_dir: PathBuf = PathBuf::from("~/");
+
+    let cache_dir = match exists(home_dir) {
+        Ok(b) => {
+            if b {
+                let builder = DirBuilder::new()
+                    .recursive(true)
+                    .create(home_dir.join(".cache").join("ratatui-json-editor"));
+                match builder {
+                    Ok(()) => Some(home_dir.join(".cache").join("simple-json")),
+                    _ => None,
+                };
+            } else {
+                None;
+            }
+        }
+        Err(e) => None,
+    };
 }
