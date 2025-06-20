@@ -9,7 +9,8 @@ use ratatui::crossterm::terminal::{
 };
 use std::error::Error;
 use std::fs::{DirBuilder, File};
-use std::io;
+use std::io::Write;
+use std::io::{self, BufWriter};
 
 mod app;
 mod ui;
@@ -18,6 +19,20 @@ use ui::ui;
 
 use crate::app::{EditingScreens, ValueType};
 
+const TMP_JSON_FILE: &str = "tmp_json_file.json";
+
+fn restore_terminal<T: Backend + std::io::Write>(
+    terminal: &mut Terminal<T>,
+) -> Result<(), Box<dyn Error>> {
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture,
+    )?;
+    terminal.show_cursor()?;
+    Ok(())
+}
 // Using stderr because stderr is piped differently than stdout
 // this allows us to let users pipe the output of our program to a file
 // we will render output to stderr and print our completed json to stdout
@@ -35,20 +50,27 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
 
     // TODO: Create writeable tmp file
-    #[allow(unused_variables)]
-    let tmp_file = "";
+    // if create_tmp_file().is_none() {
+    //     return restore_terminal(&mut terminal);
+    // }
+    //
+    // #[allow(unused_variables, unused_mut)]
+    // let mut tmp_file: BufWriter<File> = create_tmp_file().unwrap();
+    // tmp_file.write_all(b"tedt").unwrap();
+    // tmp_file.flush().unwrap();
+    // let mut tmp_file = match create_tmp_file() {
+    //     Some(file) => file,
+    //     None => {
+    //         println!("Failed to create temporary file for JSON storage");
+    //         restore_terminal(terminal)?;
+    //     }
+    // };
 
     let res = run_app(&mut terminal, &mut app);
 
     // application post-run steps
     // restore terminal state
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture,
-    )?;
-    terminal.show_cursor()?;
+    restore_terminal(&mut terminal)?;
 
     // handle result of run_app
     if let Ok(do_print) = res {
@@ -325,27 +347,48 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
     }
 }
 
-#[allow(dead_code)]
-fn create_tmp_file() -> Option<File> {
+fn _create_tmp_file() -> Option<BufWriter<File>> {
     use std::fs::exists;
     use std::path::PathBuf;
 
-    let home_dir: PathBuf = PathBuf::from("~/");
-
-    let cache_dir = match exists(home_dir) {
+    // Check that this works so we can continue building off of it
+    let mut home_dir: PathBuf = PathBuf::from("/home/thomas");
+    // let mut home_dir: PathBuf = PathBuf::from("$HOME");
+    match exists(&home_dir) {
         Ok(b) => {
-            if b {
-                let builder = DirBuilder::new()
-                    .recursive(true)
-                    .create(home_dir.join(".cache").join("ratatui-json-editor"));
-                match builder {
-                    Ok(()) => Some(home_dir.join(".cache").join("simple-json")),
-                    _ => None,
-                };
-            } else {
-                None;
+            if !b {
+                return None;
             }
         }
-        Err(e) => None,
+        Err(_) => return None,
     };
+    // Recursively create the cache directory
+    // using `expect` because it won't error
+    // and we check for existence below
+    home_dir.push(".cache/simple_json");
+    DirBuilder::new()
+        .recursive(true)
+        .create(&home_dir)
+        .expect("Won't error because of recursive mode");
+
+    if let Ok(b) = exists(&home_dir) {
+        match b {
+            true => {
+                home_dir.push(TMP_JSON_FILE);
+                let tmp_file = File::options()
+                    .read(true)
+                    // .write(true)
+                    .append(true)
+                    .create(true)
+                    // .truncate(true)
+                    .open(&home_dir);
+                // tmp_file.ok();
+                let file: BufWriter<File> = BufWriter::new(tmp_file.unwrap());
+                Some(file)
+            }
+            false => None,
+        }
+    } else {
+        None
+    }
 }

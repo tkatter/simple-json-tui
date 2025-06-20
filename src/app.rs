@@ -4,7 +4,7 @@ mod selection_screen;
 use json_helpers::{create_array, create_object};
 use selection_screen::SelectionScreen;
 use serde_json::{Number, json, to_value};
-use std::collections::HashMap;
+use std::{collections::HashMap, fs::File, io::BufWriter};
 
 pub enum EditingScreens {
     Default,
@@ -56,6 +56,8 @@ pub struct App {
     pub currently_editing: Option<CurrentlyEditing>, // The optional state containing what the user is currently editing of the key or value, if not editing then will be None
     pub array_values: ArrayValues,
     pub selection_screen: SelectionScreen,
+    // TODO: Build Mutex file/thread/async handling flow
+    // pub tmp_path: BufWriter<File>
 }
 
 impl App {
