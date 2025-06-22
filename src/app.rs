@@ -1,10 +1,12 @@
-#![allow(unused)]
+// #![allow(unused)]
 mod json_helpers;
-mod selection_screen;
-use json_helpers::{create_array, create_object};
-use selection_screen::SelectionScreen;
-use serde_json::{Number, json, to_value};
-use std::{collections::HashMap, fs::File, io::BufWriter};
+pub mod screens;
+// use json_helpers::{create_array, create_object};
+use screens::selection::SelectionScreen;
+use serde_json::Number;
+// use serde_json::{json, to_value};
+use std::collections::HashMap;
+// use std::{fs::File, io::BufWriter};
 
 pub enum EditingScreens {
     Default,
@@ -129,13 +131,6 @@ impl App {
 
     pub fn toggle_value_type(&mut self) {
         let current_type = &self.value_type;
-        let types: Vec<ValueType> = vec![
-            ValueType::String,
-            ValueType::Number,
-            ValueType::Bool,
-            ValueType::Object,
-            ValueType::Array,
-        ];
 
         match *current_type {
             ValueType::String => self.value_type = ValueType::Number,

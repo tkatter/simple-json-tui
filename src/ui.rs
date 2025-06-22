@@ -1,19 +1,25 @@
 mod components;
+mod selection_pop;
 mod theme;
 use components::AppTitle;
 use theme::ColorScheme;
 
+use crate::{
+    app::{App, CurrentScreen, CurrentlyEditing},
+    ui::{
+        components::{EditingBox, EditingId},
+        selection_pop::render_popup,
+    },
+};
+
+#[allow(clippy::single_component_path_imports)]
+pub(crate) use ratatui;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Wrap},
-};
-
-use crate::{
-    app::{App, CurrentScreen, CurrentlyEditing},
-    ui::components::{EditingBox, EditingId},
+    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
 };
 
 // helper function to create a centered rect using up certain percentage of the available rect `r`
@@ -39,7 +45,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         .split(popup_layout[1])[1]
 }
 
-pub fn ui(frame: &mut Frame, app: &App) {
+pub fn ui(frame: &mut Frame, app: &mut App) {
     // SET A BACKGROUND COLOR FOR THE ENTIRE FRAME
     let background_color = Block::new().style(Style::new().bg(ColorScheme::Crust.v()));
     frame.render_widget(background_color, frame.area());
@@ -144,31 +150,7 @@ pub fn ui(frame: &mut Frame, app: &App) {
     frame.render_widget(key_notes_footer, footer_chunks[1]);
 
     // SELECTION POPUP
-    if let CurrentScreen::Selection = &app.current_screen {
-        let popup_block = Block::bordered()
-            .title(Line::from("Select a JSON data type").centered().bold())
-            .borders(Borders::ALL)
-            .border_type(ratatui::widgets::BorderType::Double)
-            .padding(Padding::vertical(1))
-            .style(
-                Style::new()
-                    .bg(ColorScheme::Surface0.v())
-                    .fg(ColorScheme::Mantle.v()),
-            );
-
-        let options: Vec<ListItem> = app
-            .selection_screen
-            .options
-            .to_owned()
-            .iter()
-            .map(|option| ListItem::new(Text::from(*option).centered()))
-            .collect();
-
-        let list = List::new(options).block(popup_block);
-        let area = centered_rect(15, 10, frame.area());
-        frame.render_widget(list, area);
-    }
-
+    render_popup(frame, app);
     // EDITING POPUP
     if let Some(editing) = &app.currently_editing {
         let popup_block = Block::bordered()

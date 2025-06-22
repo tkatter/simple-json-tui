@@ -7,32 +7,23 @@ use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
     EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
 };
-use std::error::Error;
-use std::fs::{DirBuilder, File};
-use std::io::Write;
-use std::io::{self, BufWriter};
+use std::{
+    error::Error,
+    fs::{DirBuilder, File},
+    io::{self, BufWriter},
+};
 
 mod app;
 mod ui;
-use app::{App, CurrentScreen, CurrentlyEditing};
+use app::{
+    App, CurrentScreen, CurrentlyEditing, EditingScreens, ValueType,
+    screens::{match_default_editing, match_selection_screen},
+};
 use ui::ui;
 
-use crate::app::{EditingScreens, ValueType};
-
+#[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
 
-fn restore_terminal<T: Backend + std::io::Write>(
-    terminal: &mut Terminal<T>,
-) -> Result<(), Box<dyn Error>> {
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture,
-    )?;
-    terminal.show_cursor()?;
-    Ok(())
-}
 // Using stderr because stderr is piped differently than stdout
 // this allows us to let users pipe the output of our program to a file
 // we will render output to stderr and print our completed json to stdout
@@ -109,10 +100,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     }
                     _ => {}
                 },
-                CurrentScreen::Selection => match key.code {
-                    KeyCode::Char('q') | KeyCode::Esc => app.current_screen = CurrentScreen::Main,
-                    _ => {}
-                },
+                CurrentScreen::Selection => match_selection_screen(&key, app),
                 CurrentScreen::Quitting => match key.code {
                     KeyCode::Char('y') | KeyCode::Enter | KeyCode::Tab => {
                         return Ok(true); // signal to print JSON
@@ -125,66 +113,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 CurrentScreen::Editing(EditingScreens::Default)
                     if key.kind == KeyEventKind::Press =>
                 {
-                    match key.code {
-                        KeyCode::Enter => {
-                            if let Some(editing) = &app.currently_editing {
-                                match editing {
-                                    CurrentlyEditing::Key => {
-                                        app.currently_editing = Some(CurrentlyEditing::Value);
-                                    }
-                                    CurrentlyEditing::Value => {
-                                        if app.key_input.is_empty() | app.value_input.is_empty() {
-                                            app.key_input = String::from("cantSubmitNoKey");
-                                            app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
-                                        } else if !app.value_input.is_empty() {
-                                            app.save_key_value();
-                                            app.current_screen = CurrentScreen::Main;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        KeyCode::Backspace => {
-                            if let Some(editing) = &app.currently_editing {
-                                match editing {
-                                    CurrentlyEditing::Key => {
-                                        app.key_input.pop();
-                                    }
-                                    CurrentlyEditing::Value => {
-                                        app.value_input.pop();
-                                    }
-                                }
-                            }
-                        }
-                        KeyCode::BackTab => {
-                            if let Some(editing) = &app.currently_editing {
-                                match editing {
-                                    CurrentlyEditing::Key => {}
-                                    CurrentlyEditing::Value => app.toggle_value_type(),
-                                }
-                            }
-                        }
-                        KeyCode::Esc => {
-                            app.current_screen = CurrentScreen::Main;
-                            app.currently_editing = None; // exit editing mode
-                        }
-                        KeyCode::Tab => {
-                            app.toggle_editing();
-                        }
-                        KeyCode::Char(value) => {
-                            if let Some(editing) = &app.currently_editing {
-                                match editing {
-                                    CurrentlyEditing::Key => {
-                                        app.key_input.push(value);
-                                    }
-                                    CurrentlyEditing::Value => {
-                                        app.value_input.push(value);
-                                    }
-                                }
-                            }
-                        }
-                        _ => {}
-                    }
+                    match_default_editing(key, app)
                 }
                 CurrentScreen::Editing(EditingScreens::Array)
                     if key.kind == KeyEventKind::Press =>
@@ -345,6 +274,19 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             }
         }
     }
+}
+
+fn restore_terminal<T: Backend + std::io::Write>(
+    terminal: &mut Terminal<T>,
+) -> Result<(), Box<dyn Error>> {
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture,
+    )?;
+    terminal.show_cursor()?;
+    Ok(())
 }
 
 fn _create_tmp_file() -> Option<BufWriter<File>> {

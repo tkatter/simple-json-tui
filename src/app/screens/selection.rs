@@ -3,7 +3,7 @@ use ratatui::{
     widgets::ListState,
 };
 
-use crate::app::{App, CurrentScreen, ValueType};
+use crate::app::{App, CurrentScreen};
 
 #[derive(Debug)]
 pub struct SelectionScreen {
