@@ -4,7 +4,7 @@ use crate::App;
 use crate::CurrentlyEditing;
 use crate::app::CurrentScreen;
 
-pub fn match_default_editing(key: KeyEvent, app: &mut App) {
+pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
         KeyCode::Enter => {
             if let Some(editing) = &app.currently_editing {

@@ -8,7 +8,7 @@ use crate::{
     app::{App, CurrentScreen, CurrentlyEditing},
     ui::{
         components::{EditingBox, EditingId},
-        selection_pop::render_popup,
+        selection_pop::render_selection_list,
     },
 };
 
@@ -131,7 +131,7 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
                 Style::default().fg(Color::Red),
             ),
             CurrentScreen::Quitting => Span::styled(
-                "q to quit / e to make new pair",
+                "q to quit / s to select value type / e to make new pair",
                 Style::default().fg(Color::Red),
             ),
         }
@@ -150,7 +150,8 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     frame.render_widget(key_notes_footer, footer_chunks[1]);
 
     // SELECTION POPUP
-    render_popup(frame, app);
+    render_selection_list(frame, app);
+
     // EDITING POPUP
     if let Some(editing) = &app.currently_editing {
         let popup_block = Block::bordered()
