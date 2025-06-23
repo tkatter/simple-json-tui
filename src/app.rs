@@ -15,7 +15,9 @@ pub enum CurrentScreen {
     Start,
 }
 
+#[derive(Default)]
 pub enum CurrentlyEditing {
+    #[default]
     Key,
     Value,
 }

@@ -1,12 +1,9 @@
-use ratatui::{
+use crate::ui::ratatui::{
+    Frame,
     layout::{Constraint, Flex, Layout, Rect},
+    style::Style,
     text::{Line, Text},
     widgets::Paragraph,
-};
-
-use super::ratatui::{
-    Frame,
-    style::Style,
     widgets::{Block, BorderType, Borders},
 };
 
@@ -20,14 +17,6 @@ pub fn render_start_screen(frame: &mut Frame<'_>, app: &mut App) {
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .style(Style::new().fg(ColorScheme::Peach.v()));
-
-    // let block2 = Block::bordered()
-    //     .title(" Right Side ")
-    //     .title_alignment(Alignment::Center)
-    //     .bold()
-    //     .borders(Borders::ALL)
-    //     .border_type(BorderType::Thick)
-    //     .style(Style::new().fg(ColorScheme::Peach.v()));
 
     let start_text = Text::from(vec![
         Line::from("Welcome to the App!"),

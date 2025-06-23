@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use crate::ui::ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
@@ -13,7 +11,7 @@ use crate::{
     ui::theme::ColorScheme,
 };
 
-pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: &Rc<[Rect]>) {
+pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
     let current_navigation_text = vec![
         // first half of the text
         match app.current_screen {
@@ -84,8 +82,14 @@ pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: &Rc<
     let footer_chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(area[2]);
+        .split(area);
 
-    frame.render_widget(mode_footer, footer_chunks[0]);
-    frame.render_widget(key_notes_footer, footer_chunks[1]);
+    // show only if not on the start screen
+    match app.current_screen {
+        CurrentScreen::Start => {}
+        _ => {
+            frame.render_widget(mode_footer, footer_chunks[0]);
+            frame.render_widget(key_notes_footer, footer_chunks[1]);
+        }
+    }
 }

@@ -23,13 +23,6 @@ impl Header {
 
 impl Widget for Header {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        // let header_layout = Layout::horizontal(vec![
-        //     Constraint::Min(1),
-        //     Constraint::Min(1),
-        //     Constraint::Min(1),
-        // ])
-        // .split(area);
-
         let header_block = Block::default()
             .padding(Padding::horizontal(4))
             .borders(Borders::ALL)

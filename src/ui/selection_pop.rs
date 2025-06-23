@@ -1,4 +1,4 @@
-use super::ratatui::{
+use crate::ui::ratatui::{
     Frame,
     layout::{Alignment, Constraint, Flex, Layout, Rect},
     style::{Style, Stylize},

@@ -1,5 +1,6 @@
 mod bottom_status_bar;
 mod components;
+mod editing;
 mod preview;
 mod selection_pop;
 mod start;
@@ -10,7 +11,8 @@ use crate::{
     app::{App, CurrentScreen},
     ui::{
         bottom_status_bar::render_bottom_status_bar,
-        components::{EditingBox, EditingId},
+        // components::{EditingBox, EditingId},
+        editing::render_editing,
         preview::render_preview_json,
         selection_pop::render_selection_list,
         start::render_start_screen,
@@ -57,14 +59,13 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     frame.render_widget(background_color, frame.area());
 
     // RENDER START SCREEN
-    if let CurrentScreen::Start = app.current_screen {
-        render_start_screen(frame, app);
-    }
+    render_start_screen(frame, app);
 
     // MAIN LAYOUT
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
+            Constraint::Length(3),
             Constraint::Length(3),
             Constraint::Min(1),
             Constraint::Length(3),
@@ -82,47 +83,28 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     frame.render_widget(Clear, header_layout[1]);
     frame.render_widget(header, header_layout[1]);
 
-    // RENDER LIST OF KEY: VALUE PAIRS - COULD IMPLEMENT SELECTION FUNCTIONALITY HERE
-    render_preview_json(frame, app, &chunks);
+    // EDITING/PREVIEW LAYOUT
+    let edit_preview_layout =
+        Layout::horizontal(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
+            .margin(2)
+            .spacing(2)
+            .split(chunks[2]);
 
-    // BOTTOM NAV BAR
-    // show only if not on the start screen
-    match app.current_screen {
-        CurrentScreen::Start => {}
-        _ => {
-            render_bottom_status_bar(frame, app, &chunks);
-        }
+    // RENDER LIST OF KEY: VALUE PAIRS - COULD IMPLEMENT SELECTION FUNCTIONALITY HERE
+    render_preview_json(frame, app, edit_preview_layout[1]);
+
+    // RENDER BOTTOM STATUS BAR
+    render_bottom_status_bar(frame, app, chunks[3]);
+
+    // EDITING POPUP
+    if let CurrentScreen::Editing(_) | CurrentScreen::Main | CurrentScreen::Selection =
+        &app.current_screen
+    {
+        render_editing(frame, app, edit_preview_layout[0]);
     }
 
     // SELECTION POPUP
     render_selection_list(frame, app);
-
-    // EDITING POPUP
-    if let Some(editing) = &app.currently_editing {
-        let popup_block = Block::bordered()
-            .title(Line::from("Enter a new key-value pair").centered())
-            .borders(Borders::ALL)
-            .border_type(ratatui::widgets::BorderType::Double)
-            .style(Style::new().bg(ColorScheme::Base.v()))
-            .bold();
-
-        // Size of the popup
-        let area = centered_rect(60, 15, frame.area());
-        frame.render_widget(popup_block, area);
-
-        // popup layout
-        let popup_chunks =
-            Layout::horizontal([Constraint::Percentage(50), Constraint::Percentage(50)])
-                .margin(2)
-                .spacing(1)
-                .split(area);
-
-        // render blocks for key and value pairs
-        let key_box = EditingBox::new(EditingId::Key, app, editing);
-        frame.render_widget(key_box, popup_chunks[0]);
-        let value_box = EditingBox::new(EditingId::Value, app, editing);
-        frame.render_widget(value_box, popup_chunks[1]);
-    }
 
     // EXIT POPUP
     if let CurrentScreen::Quitting = app.current_screen {
