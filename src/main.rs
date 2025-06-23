@@ -16,12 +16,12 @@ use std::{
 mod app;
 mod ui;
 use app::{
-    App, CurrentScreen, CurrentlyEditing, EditingScreens,
-    screens::{match_array_editing, match_default_editing, match_selection_screen},
+    App, CurrentScreen, CurrentlyEditing, ValueType,
+    screens::{
+        match_array_editing, match_default_editing, match_object_editing, match_selection_screen,
+    },
 };
 use ui::ui;
-
-use crate::app::screens::match_object_editing;
 
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
@@ -91,10 +91,10 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 continue;
             }
             match app.current_screen {
-                CurrentScreen::Main => match key.code {
+                CurrentScreen::Main | CurrentScreen::Start => match key.code {
                     KeyCode::Char('s') => app.current_screen = CurrentScreen::Selection,
                     KeyCode::Char('e') => {
-                        app.current_screen = CurrentScreen::Editing(EditingScreens::Default);
+                        app.current_screen = CurrentScreen::Editing(ValueType::default());
                         app.currently_editing = Some(CurrentlyEditing::Key);
                     }
                     KeyCode::Char('q') => {
@@ -103,20 +103,19 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     _ => {}
                 },
                 CurrentScreen::Selection => match_selection_screen(&key, app),
-
-                CurrentScreen::Editing(EditingScreens::Default)
-                    if key.kind == KeyEventKind::Press =>
-                {
+                CurrentScreen::Editing(ValueType::String) if key.kind == KeyEventKind::Press => {
                     match_default_editing(&key, app)
                 }
-                CurrentScreen::Editing(EditingScreens::Array)
-                    if key.kind == KeyEventKind::Press =>
-                {
+                CurrentScreen::Editing(ValueType::Bool) if key.kind == KeyEventKind::Press => {
+                    match_default_editing(&key, app)
+                }
+                CurrentScreen::Editing(ValueType::Number) if key.kind == KeyEventKind::Press => {
+                    match_default_editing(&key, app)
+                }
+                CurrentScreen::Editing(ValueType::Array) if key.kind == KeyEventKind::Press => {
                     match_array_editing(&key, app)
                 }
-                CurrentScreen::Editing(EditingScreens::Object)
-                    if key.kind == KeyEventKind::Press =>
-                {
+                CurrentScreen::Editing(ValueType::Object) if key.kind == KeyEventKind::Press => {
                     match_object_editing(&key, app)
                 }
                 CurrentScreen::Quitting => match key.code {

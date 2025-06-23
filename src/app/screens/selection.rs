@@ -3,7 +3,7 @@ use ratatui::{
     widgets::ListState,
 };
 
-use crate::app::{App, CurrentScreen};
+use crate::app::{App, CurrentScreen, CurrentlyEditing, ValueType};
 
 #[derive(Debug)]
 pub struct SelectionScreen {
@@ -23,8 +23,25 @@ impl Default for SelectionScreen {
 pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
     match key.code {
         KeyCode::Enter | KeyCode::Char('l') | KeyCode::Right => {
-            app.current_screen = CurrentScreen::Main;
-            app.selection_screen.state.select(None);
+            if let Some(selected_idx) = app.selection_screen.state.selected() {
+                let selected_value = match selected_idx {
+                    0 => ValueType::String,
+                    1 => ValueType::Number,
+                    2 => ValueType::Bool,
+                    3 => ValueType::Object,
+                    4 => ValueType::Array,
+                    _ => ValueType::default(),
+                };
+                app.value_type = selected_value.to_owned();
+                app.currently_editing = Some(CurrentlyEditing::Key);
+                app.current_screen = CurrentScreen::Editing(selected_value);
+                app.selection_screen.state.select(None);
+            } else {
+                // app.value_type = ValueType::default();
+                app.currently_editing = Some(CurrentlyEditing::Key);
+                app.current_screen = CurrentScreen::Editing(app.value_type.to_owned());
+                app.selection_screen.state.select(None);
+            }
         }
         KeyCode::Char('q') | KeyCode::Char('h') | KeyCode::Esc | KeyCode::Left => {
             app.current_screen = CurrentScreen::Main;

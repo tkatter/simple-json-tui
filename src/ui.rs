@@ -1,14 +1,18 @@
+mod bottom_status_bar;
 mod components;
 mod selection_pop;
+mod start;
 mod theme;
-use components::AppTitle;
+// use components::AppTitle;
 use theme::ColorScheme;
 
 use crate::{
-    app::{App, CurrentScreen, CurrentlyEditing},
+    app::{App, CurrentScreen},
     ui::{
+        bottom_status_bar::render_bottom_status_bar,
         components::{EditingBox, EditingId},
         selection_pop::render_selection_list,
+        start::render_start_screen,
     },
 };
 
@@ -50,6 +54,9 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     let background_color = Block::new().style(Style::new().bg(ColorScheme::Crust.v()));
     frame.render_widget(background_color, frame.area());
 
+    // RENDER START SCREEN
+    render_start_screen(frame, app);
+
     // MAIN LAYOUT
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -60,8 +67,8 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
         ])
         .split(frame.area());
 
-    let title = AppTitle::new("Create new JSON".to_string());
-    frame.render_widget(title, chunks[0]);
+    // let title = AppTitle::new("Create new JSON".to_string());
+    // frame.render_widget(title, chunks[0]);
 
     // RENDER LIST OF KEY: VALUE PAIRS - COULD IMPLEMENT SELECTION FUNCTIONALITY HERE
     let mut list_items = Vec::<ListItem>::new();
@@ -78,76 +85,13 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     frame.render_widget(list, chunks[1]);
 
     // BOTTOM NAV BAR
-    let current_navigation_text = vec![
-        // first half of the text
-        match app.current_screen {
-            CurrentScreen::Main => Span::styled("Normal Mode", Style::default().fg(Color::Green)),
-            CurrentScreen::Selection => {
-                Span::styled("Select type", Style::default().fg(Color::Green))
-            }
-            CurrentScreen::Editing(_) => {
-                Span::styled("Editing Mode", Style::default().fg(Color::Yellow))
-            }
-            CurrentScreen::Quitting => {
-                Span::styled("Exiting", Style::default().fg(Color::LightRed))
-            }
+    // show only if not on the start screen
+    match app.current_screen {
+        CurrentScreen::Start => {}
+        _ => {
+            render_bottom_status_bar(frame, app, &chunks);
         }
-        .to_owned(),
-        // white divider
-        Span::styled(" | ", Style::default().fg(Color::White)),
-        // second half of the text with hints on what the user is editing
-        {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        Span::styled("Editing Key", Style::default().fg(Color::Green))
-                    }
-                    CurrentlyEditing::Value => {
-                        Span::styled("Editing Value", Style::default().fg(Color::LightGreen))
-                    }
-                }
-            } else {
-                Span::styled("Not Editing", Style::default().fg(Color::DarkGray))
-            }
-        },
-    ];
-
-    let mode_footer = Paragraph::new(Line::from(current_navigation_text))
-        .block(Block::default().borders(Borders::ALL));
-
-    //render keybinding hints
-    let current_keys_hint = {
-        match app.current_screen {
-            CurrentScreen::Main => Span::styled(
-                "q to quit / e to make new pair",
-                Style::default().fg(Color::Red),
-            ),
-            CurrentScreen::Selection => Span::styled(
-                "<esc> to close / [#] to select",
-                Style::default().fg(Color::Red),
-            ),
-            CurrentScreen::Editing(_) => Span::styled(
-                "<esc> to cancel / <tab> to switch boxes / <enter> to complete",
-                Style::default().fg(Color::Red),
-            ),
-            CurrentScreen::Quitting => Span::styled(
-                "q to quit / s to select value type / e to make new pair",
-                Style::default().fg(Color::Red),
-            ),
-        }
-    };
-
-    let key_notes_footer =
-        Paragraph::new(Line::from(current_keys_hint)).block(Block::default().borders(Borders::ALL));
-
-    // create layout for the bottom section
-    let footer_chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(chunks[2]);
-
-    frame.render_widget(mode_footer, footer_chunks[0]);
-    frame.render_widget(key_notes_footer, footer_chunks[1]);
+    }
 
     // SELECTION POPUP
     render_selection_list(frame, app);

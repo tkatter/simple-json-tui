@@ -8,17 +8,12 @@ use serde_json::Number;
 use std::collections::HashMap;
 // use std::{fs::File, io::BufWriter};
 
-pub enum EditingScreens {
-    Default,
-    Object,
-    Array,
-}
-
 pub enum CurrentScreen {
+    Editing(ValueType),
     Main,
-    Selection,
-    Editing(EditingScreens),
     Quitting,
+    Selection,
+    Start,
 }
 
 pub enum CurrentlyEditing {
@@ -26,13 +21,14 @@ pub enum CurrentlyEditing {
     Value,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+#[derive(Default, Clone, PartialEq, Eq, Debug)]
 pub enum ValueType {
-    String,
-    Number,
-    Bool,
-    Object,
     Array,
+    Bool,
+    Number,
+    Object,
+    #[default]
+    String,
 }
 
 pub struct ArrayValues {
@@ -69,7 +65,7 @@ impl App {
             value_input: String::new(),
             value_type: ValueType::String,
             pairs: HashMap::new(),
-            current_screen: CurrentScreen::Main,
+            current_screen: CurrentScreen::Start,
             currently_editing: None,
             array_values: ArrayValues { values: Vec::new() },
             selection_screen: SelectionScreen::default(),
@@ -133,17 +129,26 @@ impl App {
         let current_type = &self.value_type;
 
         match *current_type {
-            ValueType::String => self.value_type = ValueType::Number,
-            ValueType::Number => self.value_type = ValueType::Bool,
+            ValueType::String => {
+                self.value_type = ValueType::Number;
+                self.current_screen = CurrentScreen::Editing(ValueType::Number);
+            }
+            ValueType::Number => {
+                self.value_type = ValueType::Bool;
+                self.current_screen = CurrentScreen::Editing(ValueType::Bool);
+            }
             ValueType::Bool => {
                 self.value_type = ValueType::Object;
-                self.current_screen = CurrentScreen::Editing(EditingScreens::Object)
+                self.current_screen = CurrentScreen::Editing(ValueType::Object)
             }
             ValueType::Object => {
                 self.value_type = ValueType::Array;
-                self.current_screen = CurrentScreen::Editing(EditingScreens::Array)
+                self.current_screen = CurrentScreen::Editing(ValueType::Array)
             }
-            ValueType::Array => self.value_type = ValueType::String,
+            ValueType::Array => {
+                self.value_type = ValueType::String;
+                self.current_screen = CurrentScreen::Editing(ValueType::String);
+            }
         }
     }
 
