@@ -24,3 +24,7 @@ A simple quality of life TUI application to make writing JSON less of a headache
 ## CLI
 
 - [ ] Implement `clap` for CLI argument/option parsing
+
+## Key/Values
+
+- [ ] Implement easy snake_case or camelCase for input

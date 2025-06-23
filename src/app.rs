@@ -1,4 +1,3 @@
-// #![allow(unused)]
 mod json_helpers;
 pub mod screens;
 // use json_helpers::{create_array, create_object};
@@ -153,7 +152,7 @@ impl App {
     }
 
     pub fn print_json(&self) -> serde_json::Result<()> {
-        let output = serde_json::to_string(&self.pairs)?;
+        let output = serde_json::to_string_pretty(&self.pairs)?;
         println!("{}", output);
         Ok(())
     }

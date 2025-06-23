@@ -3,7 +3,7 @@ use ratatui::{
     layout::Rect,
     style::{Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, BorderType, Borders, Paragraph, Widget},
+    widgets::{Block, BorderType, Borders, Padding, Paragraph, Widget},
 };
 
 use crate::{
@@ -11,38 +11,46 @@ use crate::{
     ui::theme::ColorScheme,
 };
 
-pub struct AppTitle {
+pub struct Header {
     content: String,
 }
 
-impl AppTitle {
-    pub fn new(content: String) -> AppTitle {
-        AppTitle { content }
+impl Header {
+    pub fn new(content: String) -> Header {
+        Header { content }
     }
 }
 
-impl Widget for AppTitle {
+impl Widget for Header {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let title_block = Block::default()
-            .borders(Borders::BOTTOM)
-            .style(Style::new().bg(ColorScheme::Base.v()));
+        // let header_layout = Layout::horizontal(vec![
+        //     Constraint::Min(1),
+        //     Constraint::Min(1),
+        //     Constraint::Min(1),
+        // ])
+        // .split(area);
 
-        let title_line = Line::styled(
+        let header_block = Block::default()
+            .padding(Padding::horizontal(4))
+            .borders(Borders::ALL)
+            .border_type(BorderType::Thick)
+            .style(
+                Style::new()
+                    .bg(ColorScheme::Crust.v())
+                    .fg(ColorScheme::Pink.v()),
+            );
+
+        let header_line = Line::styled(
             &self.content,
             Style::new()
-                .fg(ColorScheme::Peach.v())
+                .fg(ColorScheme::Mauve.v())
                 .add_modifier(Modifier::BOLD),
         )
         .centered();
 
-        let title = Paragraph::new(Text::from(vec![
-            Line::default(),
-            title_line,
-            Line::default(),
-        ]))
-        .block(title_block);
+        let header = Paragraph::new(Text::from(header_line)).block(header_block);
 
-        title.render(area, buf);
+        header.render(area, buf);
     }
 }
 

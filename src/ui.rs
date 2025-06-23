@@ -1,18 +1,20 @@
 mod bottom_status_bar;
 mod components;
+mod preview;
 mod selection_pop;
 mod start;
 mod theme;
-// use components::AppTitle;
-use theme::ColorScheme;
+use components::Header;
 
 use crate::{
     app::{App, CurrentScreen},
     ui::{
         bottom_status_bar::render_bottom_status_bar,
         components::{EditingBox, EditingId},
+        preview::render_preview_json,
         selection_pop::render_selection_list,
         start::render_start_screen,
+        theme::ColorScheme,
     },
 };
 
@@ -22,8 +24,8 @@ use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::{Line, Span, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
+    text::{Line, Text},
+    widgets::{Block, Borders, Clear, Paragraph, Wrap},
 };
 
 // helper function to create a centered rect using up certain percentage of the available rect `r`
@@ -55,34 +57,33 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
     frame.render_widget(background_color, frame.area());
 
     // RENDER START SCREEN
-    render_start_screen(frame, app);
+    if let CurrentScreen::Start = app.current_screen {
+        render_start_screen(frame, app);
+    }
 
     // MAIN LAYOUT
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(4),
+            Constraint::Length(3),
             Constraint::Min(1),
             Constraint::Length(3),
         ])
         .split(frame.area());
 
-    // let title = AppTitle::new("Create new JSON".to_string());
-    // frame.render_widget(title, chunks[0]);
+    // HEADER
+    let header_layout = Layout::horizontal(vec![
+        Constraint::Min(1),
+        Constraint::Min(1),
+        Constraint::Min(1),
+    ])
+    .split(chunks[0]);
+    let header = Header::new("filename.json".to_string());
+    frame.render_widget(Clear, header_layout[1]);
+    frame.render_widget(header, header_layout[1]);
 
     // RENDER LIST OF KEY: VALUE PAIRS - COULD IMPLEMENT SELECTION FUNCTIONALITY HERE
-    let mut list_items = Vec::<ListItem>::new();
-
-    for key in app.pairs.keys() {
-        list_items.push(ListItem::new(Line::from(Span::styled(
-            format!("{: <25} : {}", key, app.pairs.get(key).unwrap()),
-            Style::default().fg(Color::Yellow),
-        ))));
-    }
-
-    let list = List::new(list_items);
-
-    frame.render_widget(list, chunks[1]);
+    render_preview_json(frame, app, &chunks);
 
     // BOTTOM NAV BAR
     // show only if not on the start screen
