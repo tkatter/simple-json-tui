@@ -1,8 +1,8 @@
-use ratatui::crossterm::event::{KeyCode, KeyEvent};
+use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::App;
+use crate::CurrentScreen;
 use crate::CurrentlyEditing;
-use crate::app::CurrentScreen;
 
 pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
@@ -10,9 +10,17 @@ pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
-                        app.currently_editing = Some(CurrentlyEditing::Value);
+                        if !app.key_input.is_empty() {
+                            app.editing_preview
+                                .push(app.key_input.to_owned(), serde_json::to_value("").unwrap());
+                            app.currently_editing = Some(CurrentlyEditing::Value);
+                        }
                     }
                     CurrentlyEditing::Value => {
+                        app.editing_preview.push(
+                            app.key_input.to_owned(),
+                            serde_json::to_value(app.value_input.to_owned()).unwrap(),
+                        );
                         if app.key_input.is_empty() | app.value_input.is_empty() {
                             app.key_input = String::from("cantSubmitNoKey");
                             app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
@@ -45,20 +53,41 @@ pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
+            app.editing_preview.reset();
             app.current_screen = CurrentScreen::Main;
             app.currently_editing = None; // exit editing mode
         }
         KeyCode::Tab => {
-            app.toggle_editing();
+            if let Some(editing) = &app.currently_editing {
+                match editing {
+                    CurrentlyEditing::Key => {
+                        if !app.key_input.is_empty() {
+                            app.toggle_editing();
+                        }
+                    }
+                    CurrentlyEditing::Value => app.toggle_editing(),
+                }
+            }
         }
         KeyCode::Char(value) => {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
                         app.key_input.push(value);
+                        app.editing_preview
+                            .push(value.into(), serde_json::to_value("").unwrap());
+
+                        if !app.key_input.is_empty() {
+                            app.editing_preview
+                                .push(value.into(), serde_json::to_value("").unwrap());
+                        }
                     }
                     CurrentlyEditing::Value => {
                         app.value_input.push(value);
+                        app.editing_preview.push(
+                            app.key_input.to_owned(),
+                            serde_json::to_value(value).unwrap(),
+                        );
                     }
                 }
             }

@@ -1,4 +1,7 @@
-use ratatui::{layout::Alignment, widgets::Paragraph};
+use ratatui::{
+    layout::Alignment,
+    widgets::{List, ListItem, Paragraph},
+};
 
 use crate::ui::ratatui::{
     Frame,
@@ -23,6 +26,27 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
         .border_style(Style::new().fg(Color::White))
         .style(Style::new().fg(ColorScheme::Green.v()));
 
+    let mut list_items = Vec::<ListItem>::new();
+    let parsed_string = app.editing_preview.parse();
+    for (i, line) in parsed_string.lines().enumerate() {
+        let mut line_num: String = format!("{}", i + 1);
+        if i < 9 {
+            line_num = format!(" {}", i + 1);
+        }
+        list_items.push(ListItem::new(Line::from(vec![
+            Span::styled(
+                line_num,
+                Style::new()
+                    .fg(ColorScheme::Overlay1.v())
+                    .bg(ColorScheme::Mantle.v()),
+            ),
+            Span::raw("  "),
+            Span::styled(line, Style::new().fg(ColorScheme::Peach.v())),
+        ])));
+    }
+
+    let list = List::new(list_items).block(input_preview);
+
     if let Some(state) = &app.currently_editing {
         match state {
             CurrentlyEditing::Key => {
@@ -38,7 +62,7 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
                 );
             }
         }
-        frame.render_widget(input_preview, editing_layout[1]);
+        frame.render_widget(list, editing_layout[1]);
     } else if !app.pairs.is_empty() {
         frame.render_widget(
             input_box(
@@ -48,10 +72,9 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
             ),
             editing_layout[0],
         );
-        frame.render_widget(input_preview, editing_layout[1]);
+        frame.render_widget(list, editing_layout[1]);
     }
 }
-
 fn input_box<'a>(
     cur_editing: CurrentlyEditing,
     cur_type: &ValueType,

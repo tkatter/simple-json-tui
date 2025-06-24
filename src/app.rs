@@ -1,7 +1,7 @@
 mod json_helpers;
 pub mod screens;
 // use json_helpers::{create_array, create_object};
-use screens::selection::SelectionScreen;
+use screens::{editing_preview::EditingPreview, selection::SelectionScreen};
 use serde_json::Number;
 // use serde_json::{json, to_value};
 use std::collections::HashMap;
@@ -55,6 +55,7 @@ pub struct App {
     pub currently_editing: Option<CurrentlyEditing>, // The optional state containing what the user is currently editing of the key or value, if not editing then will be None
     pub array_values: ArrayValues,
     pub selection_screen: SelectionScreen,
+    pub editing_preview: EditingPreview,
     // TODO: Build Mutex file/thread/async handling flow
     // pub tmp_path: BufWriter<File>
 }
@@ -70,6 +71,7 @@ impl App {
             currently_editing: None,
             array_values: ArrayValues { values: Vec::new() },
             selection_screen: SelectionScreen::default(),
+            editing_preview: EditingPreview::default(),
         }
     }
 
@@ -110,6 +112,7 @@ impl App {
 
         self.pairs.insert(key, value);
 
+        self.editing_preview.reset();
         self.key_input = String::new();
         self.value_input = String::new();
         self.currently_editing = None;
