@@ -18,7 +18,7 @@ use crate::{
 
 pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
     // LAYOUT
-    let editing_layout =
+    let default_editing_layout =
         Layout::vertical(vec![Constraint::Length(3), Constraint::Min(1)]).split(area);
 
     // PREVIEW BLOCK
@@ -59,17 +59,17 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
             CurrentlyEditing::Key => {
                 frame.render_widget(
                     input_box(CurrentlyEditing::Key, &app.value_type, &app.key_input),
-                    editing_layout[0],
+                    default_editing_layout[0],
                 );
             }
             CurrentlyEditing::Value => {
                 frame.render_widget(
                     input_box(CurrentlyEditing::Value, &app.value_type, &app.value_input),
-                    editing_layout[0],
+                    default_editing_layout[0],
                 );
             }
         }
-        frame.render_widget(preview_list, editing_layout[1]);
+        frame.render_widget(preview_list, default_editing_layout[1]);
     } else if !app.pairs.is_empty() {
         frame.render_widget(
             input_box(
@@ -77,9 +77,9 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
                 &ValueType::default(),
                 &String::from(""),
             ),
-            editing_layout[0],
+            default_editing_layout[0],
         );
-        frame.render_widget(preview_list, editing_layout[1]);
+        frame.render_widget(preview_list, default_editing_layout[1]);
     }
 }
 

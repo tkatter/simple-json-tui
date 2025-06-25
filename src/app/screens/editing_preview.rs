@@ -45,4 +45,11 @@ impl EditingPreview {
         let empty_vec: Vec<serde_json::Value> = Vec::new();
         self.push(key, serde_json::Value::Array(empty_vec));
     }
+
+    /// Creates a new object with the given key.
+    pub fn new_object(&mut self, key: String) {
+        self.reset();
+        let empty_obj: Map<String, serde_json::Value> = Map::new();
+        self.push(key, serde_json::Value::Object(empty_obj));
+    }
 }

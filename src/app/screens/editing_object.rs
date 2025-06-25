@@ -1,4 +1,4 @@
-use ratatui::crossterm::event::{KeyCode, KeyEvent};
+use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::App;
 use crate::CurrentlyEditing;
@@ -10,7 +10,10 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
-                        app.currently_editing = Some(CurrentlyEditing::Value);
+                        if !app.key_input.is_empty() {
+                            app.editing_preview.new_object(app.key_input.to_owned());
+                            app.toggle_editing();
+                        }
                     }
                     CurrentlyEditing::Value => {
                         app.save_key_value();

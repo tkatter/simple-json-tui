@@ -28,7 +28,10 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
                     0 => ValueType::String,
                     1 => ValueType::Number,
                     2 => ValueType::Bool,
-                    3 => ValueType::Object,
+                    3 => {
+                        app.editing_object = true;
+                        ValueType::Object
+                    }
                     4 => ValueType::Array,
                     _ => ValueType::default(),
                 };

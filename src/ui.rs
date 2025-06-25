@@ -25,8 +25,8 @@ pub(crate) use ratatui;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style, Stylize},
-    text::{Line, Text},
+    style::{Color, Style},
+    text::Text,
     widgets::{Block, Borders, Clear, Paragraph, Wrap},
 };
 
