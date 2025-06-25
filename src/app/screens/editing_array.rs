@@ -1,4 +1,4 @@
-use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
+use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::App;
 use crate::CurrentlyEditing;
@@ -11,8 +11,11 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             match editing {
                 CurrentlyEditing::Key => {}
                 CurrentlyEditing::Value => {
-                    app.store_array_values();
-                    app.value_input = String::new();
+                    // `store_array_values` updates the editing_preview
+                    if !app.value_input.is_empty() {
+                        app.store_array_values();
+                        app.value_input = String::new();
+                    }
                 }
             }
         }
@@ -23,17 +26,24 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
-                        app.currently_editing = Some(CurrentlyEditing::Value);
+                        // If input is not empty, push value to preview and
+                        // switch focus to value_input
+                        if !app.key_input.is_empty() {
+                            if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(app.key_input.to_owned());
+                                app.toggle_editing();
+                            } else {
+                                app.editing_preview
+                                    .update_key(&"".to_string(), app.key_input.to_owned());
+                                app.toggle_editing();
+                            }
+                        }
                     }
                     CurrentlyEditing::Value => {
-                        if app.key_input.is_empty() {
-                            // IF KEY FIELD IS EMPTY -- DONT SUBMIT
-                            app.key_input = String::from("cantSubmitNoKey");
-                            app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
-                        } else if app.value_input.is_empty() {
+                        if app.value_input.is_empty() {
                             // IF VALUE FIELD IS EMPTY BUT HAS STORED VALUES THEN
                             // SUBMIT -- ELSE DON'T
-                            if !app.array_values.values.is_empty() {
+                            if !app.array_values.is_empty() {
                                 app.save_key_value();
                                 app.array_values.reset();
                                 app.value_type = ValueType::String; // reset value type
@@ -42,7 +52,7 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                                 app.value_input = String::from("cantSubmitNoValue");
                             }
                         } else {
-                            app.store_array_values();
+                            app.store_array_values(); // need to store value_input as array value before saving
                             app.save_key_value();
                             app.array_values.reset();
                             app.value_type = ValueType::String; // reset value type
@@ -54,6 +64,7 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
         }
         KeyCode::Char(value) => {
             if let Some(editing) = &app.currently_editing {
+                // Need this to avoid adding characters when CTRL is pressed
                 if !key.modifiers.contains(KeyModifiers::CONTROL) {
                     match editing {
                         CurrentlyEditing::Key => {
@@ -87,11 +98,44 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
+            app.array_values.reset();
+            app.editing_preview.reset();
+            app.key_input = String::new();
+            app.value_input = String::new();
             app.current_screen = CurrentScreen::Main;
             app.currently_editing = None; // exit editing mode
         }
         KeyCode::Tab => {
-            app.toggle_editing();
+            if let Some(editing) = &app.currently_editing {
+                match editing {
+                    CurrentlyEditing::Key => {
+                        // dont toggle if no key or no values
+                        if !app.key_input.is_empty() {
+                            if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(app.key_input.to_owned());
+                                app.toggle_editing();
+                            } else {
+                                app.editing_preview
+                                    .update_key(&"".to_string(), app.key_input.to_owned());
+                                app.toggle_editing();
+                            }
+                        }
+                    }
+                    CurrentlyEditing::Value => {
+                        if app.value_input.is_empty() {
+                            app.editing_preview
+                                .update_key(&app.key_input, "".to_string());
+                            app.toggle_editing();
+                        } else {
+                            app.store_array_values(); // need to store value_input as array value
+                            app.editing_preview
+                                .update_key(&app.key_input, "".to_string());
+                            app.toggle_editing();
+                            app.value_input = String::new();
+                        }
+                    }
+                }
+            }
         }
         _ => {}
     }

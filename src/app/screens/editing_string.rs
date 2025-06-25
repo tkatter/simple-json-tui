@@ -13,10 +13,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // If input is not empty, push value to preview and
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
-                            app.editing_preview.push(
-                                app.key_input.to_owned(),
-                                serde_json::Value::String("".to_string()),
-                            );
+                            app.editing_preview.new_string(app.key_input.to_owned());
                             app.currently_editing = Some(CurrentlyEditing::Value);
                         }
                     }
@@ -68,10 +65,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // Push key_input to editing preview and toggle
                         // focus to value_input if not empty
                         if !app.key_input.is_empty() {
-                            app.editing_preview.push(
-                                app.key_input.to_owned(),
-                                serde_json::Value::String("".to_string()),
-                            );
+                            app.editing_preview.new_string(app.key_input.to_owned());
                             app.toggle_editing();
                         }
                     }

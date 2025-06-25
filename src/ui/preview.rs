@@ -1,5 +1,6 @@
 use ratatui::{
     layout::Alignment,
+    style::Color,
     widgets::{Block, BorderType, Borders, Padding},
 };
 
@@ -19,6 +20,9 @@ use crate::{
 
 use crate::app::App;
 
+const PRIMARY: ColorScheme = ColorScheme::Peach;
+const SECONDARY: ColorScheme = ColorScheme::Mauve;
+
 pub fn render_preview_json(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
     let mut list_items = Vec::<ListItem>::new();
 
@@ -31,16 +35,47 @@ pub fn render_preview_json(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
         if i < 9 {
             line_num = format!(" {}", i + 1);
         }
-        list_items.push(ListItem::new(Line::from(vec![
-            Span::styled(
-                line_num,
-                Style::new()
-                    .fg(ColorScheme::Overlay1.v())
-                    .bg(ColorScheme::Mantle.v()),
-            ),
-            Span::raw("  "),
-            Span::styled(line, Style::new().fg(ColorScheme::Peach.v())),
-        ])));
+
+        let special_chars = ['{', '}', '[', ']'];
+        let mut color: Color = PRIMARY.v();
+
+        let styled_line: Vec<Span> = if let Some((key, value)) = line.split_once(':') {
+            for c in special_chars.iter() {
+                if value.contains(*c) {
+                    color = SECONDARY.v();
+                }
+            }
+            vec![
+                Span::styled(
+                    line_num,
+                    Style::new()
+                        .fg(ColorScheme::Overlay1.v())
+                        .bg(ColorScheme::Mantle.v()),
+                ),
+                Span::raw("  "),
+                Span::styled(key, Style::new().fg(ColorScheme::Lavender.v())),
+                Span::raw(": "),
+                Span::styled(value, Style::new().fg(color)),
+            ]
+        } else {
+            for c in special_chars.iter() {
+                if line.contains(*c) {
+                    color = SECONDARY.v();
+                }
+            }
+            vec![
+                Span::styled(
+                    line_num,
+                    Style::new()
+                        .fg(ColorScheme::Overlay1.v())
+                        .bg(ColorScheme::Mantle.v()),
+                ),
+                Span::raw("  "),
+                Span::styled(line, Style::new().fg(color)),
+            ]
+        };
+
+        list_items.push(ListItem::new(Line::from(styled_line)));
     }
 
     let preview_block = Block::bordered()

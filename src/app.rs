@@ -32,11 +32,15 @@ pub enum ValueType {
     String,
 }
 
+#[derive(Default)]
 pub struct ArrayValues {
     pub values: Vec<serde_json::Value>,
 }
 
 impl ArrayValues {
+    pub fn is_empty(&self) -> bool {
+        self.values.is_empty()
+    }
     pub fn push_value(&mut self, value: serde_json::Value) {
         self.values.push(value);
     }
@@ -69,7 +73,7 @@ impl App {
             pairs: HashMap::new(),
             current_screen: CurrentScreen::Start,
             currently_editing: None,
-            array_values: ArrayValues { values: Vec::new() },
+            array_values: ArrayValues::default(),
             selection_screen: SelectionScreen::default(),
             editing_preview: EditingPreview::default(),
         }
@@ -80,6 +84,10 @@ impl App {
         let value = serde_json::to_value(input).unwrap();
 
         self.array_values.push_value(value);
+        self.editing_preview.update_value(
+            self.key_input.to_owned(),
+            serde_json::Value::Array(self.array_values.values.to_owned()),
+        );
     }
 
     pub fn save_key_value(&mut self) {
@@ -152,6 +160,7 @@ impl App {
             ValueType::Array => {
                 self.value_type = ValueType::String;
                 self.current_screen = CurrentScreen::Editing(ValueType::String);
+                self.editing_preview.new_string(self.key_input.to_owned());
             }
         }
     }
