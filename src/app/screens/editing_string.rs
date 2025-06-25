@@ -4,23 +4,26 @@ use crate::App;
 use crate::CurrentScreen;
 use crate::CurrentlyEditing;
 
-pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
+pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
         KeyCode::Enter => {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
+                        // If input is not empty, push value to preview and
+                        // switch focus to value_input
                         if !app.key_input.is_empty() {
-                            app.editing_preview
-                                .push(app.key_input.to_owned(), serde_json::to_value("").unwrap());
+                            app.editing_preview.push(
+                                app.key_input.to_owned(),
+                                serde_json::Value::String("".to_string()),
+                            );
                             app.currently_editing = Some(CurrentlyEditing::Value);
                         }
                     }
                     CurrentlyEditing::Value => {
-                        app.editing_preview.push(
-                            app.key_input.to_owned(),
-                            serde_json::to_value(app.value_input.to_owned()).unwrap(),
-                        );
+                        // Restrict what happens when Enter is pressed
+                        // and focused on value_input
+                        // TODO: Handle this better
                         if app.key_input.is_empty() | app.value_input.is_empty() {
                             app.key_input = String::from("cantSubmitNoKey");
                             app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
@@ -53,19 +56,33 @@ pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
+            // Reset state and return to main screen
             app.editing_preview.reset();
+            app.currently_editing = None;
             app.current_screen = CurrentScreen::Main;
-            app.currently_editing = None; // exit editing mode
         }
         KeyCode::Tab => {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
+                        // Push key_input to editing preview and toggle
+                        // focus to value_input if not empty
                         if !app.key_input.is_empty() {
+                            app.editing_preview.push(
+                                app.key_input.to_owned(),
+                                serde_json::Value::String("".to_string()),
+                            );
                             app.toggle_editing();
                         }
                     }
-                    CurrentlyEditing::Value => app.toggle_editing(),
+                    CurrentlyEditing::Value => {
+                        // If editing_preview has value, clear it before
+                        // toggling focus
+                        if !app.editing_preview.is_empty() {
+                            app.editing_preview.reset();
+                        }
+                        app.toggle_editing();
+                    }
                 }
             }
         }
@@ -74,20 +91,9 @@ pub fn match_default_editing(key: &KeyEvent, app: &mut App) {
                 match editing {
                     CurrentlyEditing::Key => {
                         app.key_input.push(value);
-                        app.editing_preview
-                            .push(value.into(), serde_json::to_value("").unwrap());
-
-                        if !app.key_input.is_empty() {
-                            app.editing_preview
-                                .push(value.into(), serde_json::to_value("").unwrap());
-                        }
                     }
                     CurrentlyEditing::Value => {
                         app.value_input.push(value);
-                        app.editing_preview.push(
-                            app.key_input.to_owned(),
-                            serde_json::to_value(value).unwrap(),
-                        );
                     }
                 }
             }

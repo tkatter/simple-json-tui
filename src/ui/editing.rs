@@ -17,22 +17,28 @@ use crate::{
 };
 
 pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
+    // LAYOUT
     let editing_layout =
         Layout::vertical(vec![Constraint::Length(3), Constraint::Min(1)]).split(area);
 
+    // PREVIEW BLOCK
     let input_preview = Block::new()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
         .border_style(Style::new().fg(Color::White))
         .style(Style::new().fg(ColorScheme::Green.v()));
 
+    // CREATE PREVIEW FROM `serde_json::to_string_pretty()`
     let mut list_items = Vec::<ListItem>::new();
     let parsed_string = app.editing_preview.parse();
     for (i, line) in parsed_string.lines().enumerate() {
+        // Create line numbers
         let mut line_num: String = format!("{}", i + 1);
         if i < 9 {
             line_num = format!(" {}", i + 1);
         }
+
+        // Create line from preview key/value
         list_items.push(ListItem::new(Line::from(vec![
             Span::styled(
                 line_num,
@@ -45,8 +51,9 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
         ])));
     }
 
-    let list = List::new(list_items).block(input_preview);
+    let preview_list = List::new(list_items).block(input_preview);
 
+    // DRAW EDITING SCREEN BASED ON APP STATE
     if let Some(state) = &app.currently_editing {
         match state {
             CurrentlyEditing::Key => {
@@ -62,7 +69,7 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
                 );
             }
         }
-        frame.render_widget(list, editing_layout[1]);
+        frame.render_widget(preview_list, editing_layout[1]);
     } else if !app.pairs.is_empty() {
         frame.render_widget(
             input_box(
@@ -72,9 +79,10 @@ pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
             ),
             editing_layout[0],
         );
-        frame.render_widget(list, editing_layout[1]);
+        frame.render_widget(preview_list, editing_layout[1]);
     }
 }
+
 fn input_box<'a>(
     cur_editing: CurrentlyEditing,
     cur_type: &ValueType,

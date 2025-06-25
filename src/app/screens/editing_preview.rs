@@ -22,4 +22,7 @@ impl EditingPreview {
     pub fn parse(self: &Self) -> String {
         serde_json::to_string_pretty(&self.preview_pairs).unwrap()
     }
+    pub fn is_empty(self: &Self) -> bool {
+        self.preview_pairs.is_empty()
+    }
 }

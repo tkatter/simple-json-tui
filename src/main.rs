@@ -18,7 +18,7 @@ mod ui;
 use app::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
     screens::{
-        match_array_editing, match_default_editing, match_object_editing, match_selection_screen,
+        match_array_editing, match_object_editing, match_selection_screen, match_string_editing,
     },
 };
 use ui::ui;
@@ -92,11 +92,13 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             }
             match app.current_screen {
                 CurrentScreen::Main | CurrentScreen::Start => match key.code {
-                    KeyCode::Char('s') => app.current_screen = CurrentScreen::Selection,
-                    KeyCode::Char('e') => {
-                        app.current_screen = CurrentScreen::Editing(ValueType::default());
-                        app.currently_editing = Some(CurrentlyEditing::Key);
+                    KeyCode::Char('s') | KeyCode::Enter => {
+                        app.current_screen = CurrentScreen::Selection
                     }
+                    // KeyCode::Char('e') => {
+                    //     app.current_screen = CurrentScreen::Editing(ValueType::default());
+                    //     app.currently_editing = Some(CurrentlyEditing::Key);
+                    // }
                     KeyCode::Char('q') => {
                         app.current_screen = CurrentScreen::Quitting;
                     }
@@ -104,13 +106,13 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 },
                 CurrentScreen::Selection => match_selection_screen(&key, app),
                 CurrentScreen::Editing(ValueType::String) if key.kind == KeyEventKind::Press => {
-                    match_default_editing(&key, app)
+                    match_string_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Bool) if key.kind == KeyEventKind::Press => {
-                    match_default_editing(&key, app)
+                    match_string_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Number) if key.kind == KeyEventKind::Press => {
-                    match_default_editing(&key, app)
+                    match_string_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Array) if key.kind == KeyEventKind::Press => {
                     match_array_editing(&key, app)
