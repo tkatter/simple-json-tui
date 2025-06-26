@@ -62,7 +62,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // toggling focus
                         if app.editing_object {
                             let key = app.key_input.clone();
-                            app.remove_object_value(&key);
+                            app.remove_object_entry(&key);
                         } else if !app.editing_preview.is_empty() {
                             app.editing_preview.reset();
                         }

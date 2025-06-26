@@ -11,7 +11,7 @@ impl ArrayValues {
         self.values.push(value);
     }
 
-    pub fn reset(&mut self) {
-        self.values = Vec::new()
-    }
+    // pub fn reset(&mut self) {
+    //     self.values = Vec::new()
+    // }
 }

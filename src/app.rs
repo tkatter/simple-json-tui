@@ -114,12 +114,6 @@ impl App {
         } else if let Some(value) = value {
             self.object_values.push(key, value);
         }
-        // else {
-        //     self.object_values.push(
-        //         key,
-        //         serde_json::to_value(self.value_input.to_string()).unwrap(),
-        //     );
-        // }
 
         self.editing_preview.push(
             &self.object_values.key,
@@ -127,8 +121,17 @@ impl App {
         );
     }
 
-    pub fn remove_object_value(&mut self, key: &str) {
+    pub fn remove_object_entry(&mut self, key: &str) {
         self.object_values.remove_entry(key);
+
+        self.editing_preview.push(
+            &self.object_values.key,
+            serde_json::Value::Object(self.object_values.values.to_owned()),
+        );
+    }
+
+    pub fn update_object_key(&mut self, key: &str, new_key: &str) {
+        self.object_values.update_key(key, new_key);
 
         self.editing_preview.push(
             &self.object_values.key,
@@ -207,8 +210,8 @@ impl App {
             self.array_values = ArrayValues::default();
         } else {
             self.pairs.insert(key.to_string(), value);
+            self.handle_escape();
         }
-        // self.handle_escape();
     }
 
     pub fn toggle_editing(&mut self) {
