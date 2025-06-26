@@ -1,4 +1,5 @@
 pub mod screens;
+use ratatui::crossterm::event::{KeyEvent, KeyModifiers};
 // use json_helpers::{create_array, create_object};
 use screens::{editing_preview::EditingPreview, selection::SelectionScreen};
 use serde_json::{Map, Number};
@@ -101,33 +102,84 @@ impl App {
     }
 
     pub fn store_array_values(&mut self) {
-        let input = self.value_input.clone();
+        let input = &self.value_input;
         let value = serde_json::to_value(input).unwrap();
 
         self.array_values.push_value(value);
-        self.editing_preview.update_value(
-            &self.key_input,
-            serde_json::Value::Array(self.array_values.values.to_owned()),
-        );
+
+        if self.editing_object {
+            self.add_object_value(Some(serde_json::Value::Array(
+                self.array_values.values.to_owned(),
+            )));
+        } else {
+            self.editing_preview.update_value(
+                &self.key_input,
+                serde_json::Value::Array(self.array_values.values.to_owned()),
+            );
+        }
     }
 
-    pub fn add_object_value(&mut self) {
-        self.object_values.push(
-            self.key_input.clone(),
-            serde_json::Value::String(self.value_input.to_owned()),
-        );
+    /// Adds a key value pair to the temporary object store.
+    /// Also updates the editing preview.
+    ///
+    /// ---
+    /// `value = Option<serde_json::Value>`
+    /// ---
+    ///
+    /// If `None` is passed as `value`, will use the `value_input`
+    pub fn add_object_value(&mut self, value: Option<serde_json::Value>) {
+        let key = self.key_input.to_string();
+
+        if let Some(value) = value {
+            self.object_values.push(key, value);
+        } else {
+            self.object_values.push(
+                key,
+                serde_json::to_value(self.value_input.to_string()).unwrap(),
+            );
+        }
+
         self.editing_preview.push(
             &self.object_values.key,
             serde_json::Value::Object(self.object_values.values.to_owned()),
         );
     }
 
+    pub fn del_char(&mut self) {
+        if let Some(editing) = &self.currently_editing {
+            match editing {
+                CurrentlyEditing::Key => {
+                    self.key_input.pop();
+                }
+                CurrentlyEditing::Value => {
+                    self.value_input.pop();
+                }
+            }
+        }
+    }
+
+    pub fn push_char(&mut self, key: &KeyEvent, value: char) {
+        if let Some(editing) = &self.currently_editing {
+            // Need this to avoid adding characters when CTRL is pressed
+            if !key.modifiers.contains(KeyModifiers::CONTROL) {
+                match editing {
+                    CurrentlyEditing::Key => {
+                        self.key_input.push(value);
+                    }
+                    CurrentlyEditing::Value => {
+                        self.value_input.push(value);
+                    }
+                }
+            }
+        }
+    }
+
     pub fn save_key_value(&mut self) {
         let mut key: &str = &self.key_input;
         let value = match &self.value_type {
-            ValueType::String => serde_json::Value::String(self.value_input.clone()),
+            ValueType::String => serde_json::Value::String(self.value_input.to_string()),
             ValueType::Array => {
-                let values: Vec<serde_json::Value> = self.array_values.values.clone();
+                let values: Vec<serde_json::Value> = self.array_values.values.to_owned();
                 serde_json::Value::Array(values)
             }
             ValueType::Object => {
@@ -148,24 +200,24 @@ impl App {
         };
 
         if self.editing_object {
-            let mut new_map: Map<String, serde_json::Value> = Map::new();
-            new_map.append(&mut self.object_values.values);
-
+            // Add new value before moving the map
+            // cant use `add_object_value` because of borrowing
             self.object_values.push(key.to_string(), value);
-            self.editing_preview
-                .push(&self.object_values.key, serde_json::Value::Object(new_map));
+
+            // Update the stored object values && editing preview
+            self.editing_preview.push(
+                &self.object_values.key,
+                serde_json::Value::Object(self.object_values.values.to_owned()),
+            );
+            self.key_input = String::new();
+            self.value_input = String::new();
+            self.current_screen = CurrentScreen::Main;
+            self.currently_editing = None;
+            self.array_values = ArrayValues::default();
         } else {
             self.pairs.insert(key.to_string(), value);
         }
-
-        self.object_values = ObjectValues::default();
-        self.array_values = ArrayValues::default();
-
-        self.editing_preview.reset();
-        self.key_input = String::new();
-        self.value_input = String::new();
-        self.currently_editing = None;
-        self.current_screen = CurrentScreen::Main;
+        // self.handle_escape();
     }
 
     pub fn toggle_editing(&mut self) {
@@ -180,7 +232,10 @@ impl App {
     }
 
     pub fn handle_escape(&mut self) {
-        App::default();
+        *self = Self {
+            pairs: self.pairs.to_owned(),
+            ..Self::default()
+        };
     }
 
     pub fn toggle_value_type(&mut self) {

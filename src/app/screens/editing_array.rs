@@ -28,12 +28,18 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                         // If input is not empty, push value to preview and
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
-                            if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(&app.key_input);
+                            if app.editing_object {
+                                let empty_vec: Vec<serde_json::Value> = Vec::new();
+                                app.add_object_value(Some(serde_json::Value::Array(empty_vec)));
                                 app.toggle_editing();
                             } else {
-                                app.editing_preview.update_key("", &app.key_input);
-                                app.toggle_editing();
+                                if app.editing_preview.is_empty() {
+                                    app.editing_preview.new_array(&app.key_input);
+                                    app.toggle_editing();
+                                } else {
+                                    app.editing_preview.update_key("", &app.key_input);
+                                    app.toggle_editing();
+                                }
                             }
                         }
                     }
@@ -57,31 +63,23 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Char(value) => {
-            if let Some(editing) = &app.currently_editing {
-                // Need this to avoid adding characters when CTRL is pressed
-                if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    match editing {
-                        CurrentlyEditing::Key => {
-                            app.key_input.push(value);
-                        }
-                        CurrentlyEditing::Value => {
-                            app.value_input.push(value);
-                        }
-                    }
-                }
-            }
+            app.push_char(key, value);
+            // if let Some(editing) = &app.currently_editing {
+            //     // Need this to avoid adding characters when CTRL is pressed
+            //     if !key.modifiers.contains(KeyModifiers::CONTROL) {
+            //         match editing {
+            //             CurrentlyEditing::Key => {
+            //                 app.key_input.push(value);
+            //             }
+            //             CurrentlyEditing::Value => {
+            //                 app.value_input.push(value);
+            //             }
+            //         }
+            //     }
+            // }
         }
         KeyCode::Backspace => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.pop();
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.pop();
-                    }
-                }
-            }
+            app.del_char();
         }
         KeyCode::BackTab => {
             if let Some(editing) = &app.currently_editing {

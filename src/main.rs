@@ -105,11 +105,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     KeyCode::Char('s') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Selection
                     }
-                    //
-                    // KeyCode::Char('e') => {
-                    //     app.current_screen = CurrentScreen::Editing(ValueType::default());
-                    //     app.currently_editing = Some(CurrentlyEditing::Key);
-                    // }
                     KeyCode::Char('q') => {
                         app.current_screen = CurrentScreen::Quitting;
                     }

@@ -10,6 +10,8 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
+                        // If `key_input` is not empty && there is not an
+                        // object in progress, create a new object
                         if !app.key_input.is_empty() {
                             if app.object_values.key.is_empty() {
                                 app.object_values.add_key(&app.key_input);
@@ -32,16 +34,7 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Backspace => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.pop();
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.pop();
-                    }
-                }
-            }
+            app.del_char();
         }
         KeyCode::BackTab => {
             if let Some(editing) = &app.currently_editing {
@@ -58,16 +51,7 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
             app.toggle_editing();
         }
         KeyCode::Char(value) => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.push(value);
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.push(value);
-                    }
-                }
-            }
+            app.push_char(key, value);
         }
         _ => {}
     }
