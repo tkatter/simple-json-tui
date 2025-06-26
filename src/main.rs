@@ -90,7 +90,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 // skips events that are not KeyEventKind::Press
                 continue;
             }
-            if let CurrentScreen::Editing(_) = app.current_screen {
+            if let CurrentScreen::Editing(_) | CurrentScreen::Main = app.current_screen {
                 if key.code == KeyCode::Char('s') && key.modifiers.contains(KeyModifiers::CONTROL) {
                     // `store_array_values` updates the editing_preview
                     if !app.object_values.values.is_empty() {
@@ -105,11 +105,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     KeyCode::Char('s') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Selection
                     }
-                    //
-                    // KeyCode::Char('e') => {
-                    //     app.current_screen = CurrentScreen::Editing(ValueType::default());
-                    //     app.currently_editing = Some(CurrentlyEditing::Key);
-                    // }
                     KeyCode::Char('q') => {
                         app.current_screen = CurrentScreen::Quitting;
                     }

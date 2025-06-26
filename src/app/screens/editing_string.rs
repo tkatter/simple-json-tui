@@ -1,7 +1,7 @@
+use crate::app::{UpdateMap, ValueType};
 use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::App;
-use crate::CurrentScreen;
 use crate::CurrentlyEditing;
 
 pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
@@ -14,43 +14,22 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                app.add_object_value();
+                                app.add_object_value(None, Some(ValueType::String));
                             } else {
-                                app.editing_preview.new_string(&app.key_input);
+                                app.editing_preview.new_string(&app.key_input, true);
                             }
                             app.currently_editing = Some(CurrentlyEditing::Value);
                         }
                     }
                     CurrentlyEditing::Value => {
-                        if app.editing_object {
-                            app.add_object_value();
-                        } else {
-                            // Restrict what happens when Enter is pressed
-                            // and focused on value_input
-                            // TODO: Handle this better
-                            if app.key_input.is_empty() | app.value_input.is_empty() {
-                                app.key_input = String::from("cantSubmitNoKey");
-                                app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
-                            } else if !app.value_input.is_empty() {
-                                app.save_key_value();
-                            }
+                        if !app.value_input.is_empty() {
+                            app.save_key_value();
                         }
                     }
                 }
             }
         }
-        KeyCode::Backspace => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.pop();
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.pop();
-                    }
-                }
-            }
-        }
+        KeyCode::Backspace => app.del_char(),
         KeyCode::BackTab => {
             if let Some(editing) = &app.currently_editing {
                 match editing {
@@ -60,10 +39,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
-            // Reset state and return to main screen
-            app.editing_preview.reset();
-            app.currently_editing = None;
-            app.current_screen = CurrentScreen::Main;
+            app.handle_escape();
         }
         KeyCode::Tab => {
             if let Some(editing) = &app.currently_editing {
@@ -72,14 +48,22 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // Push key_input to editing preview and toggle
                         // focus to value_input if not empty
                         if !app.key_input.is_empty() {
-                            app.editing_preview.new_string(&app.key_input);
+                            if app.editing_object {
+                                app.add_object_value(None, Some(ValueType::String));
+                            } else {
+                                app.editing_preview.new_string(&app.key_input, true);
+                            }
+
                             app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
                         // If editing_preview has value, clear it before
                         // toggling focus
-                        if !app.editing_preview.is_empty() {
+                        if app.editing_object {
+                            let key = app.key_input.clone();
+                            app.remove_object_entry(&key);
+                        } else if !app.editing_preview.is_empty() {
                             app.editing_preview.reset();
                         }
                         app.toggle_editing();
@@ -88,16 +72,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Char(value) => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.push(value);
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.push(value);
-                    }
-                }
-            }
+            app.push_char(key, value);
         }
         _ => {}
     }

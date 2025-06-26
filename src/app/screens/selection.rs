@@ -44,8 +44,7 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Char('q') | KeyCode::Char('h') | KeyCode::Esc | KeyCode::Left => {
-            app.current_screen = CurrentScreen::Main;
-            app.selection_screen.state.select(None);
+            app.handle_escape();
         }
         KeyCode::Char('1') => app.selection_screen.state.select(Some(0)),
         KeyCode::Char('2') => app.selection_screen.state.select(Some(1)),

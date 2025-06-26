@@ -1,18 +1,12 @@
-use ratatui::{
-    layout::Alignment,
-    style::Color,
-    widgets::{Block, BorderType, Borders, Padding},
-};
-
 use crate::{
     app::CurrentScreen,
     ui::{
         ratatui::{
             Frame,
-            layout::Rect,
-            style::Style,
+            layout::{Alignment, Rect},
+            style::{Color, Style},
             text::{Line, Span},
-            widgets::{List, ListItem},
+            widgets::{Block, BorderType, Borders, List, ListItem, Padding},
         },
         theme::ColorScheme,
     },

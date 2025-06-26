@@ -1,8 +1,8 @@
+use crate::app::{UpdateMap, ValueType};
 use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::App;
 use crate::CurrentlyEditing;
-use crate::app::CurrentScreen;
 
 pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
     // KEYMAP TO ADD ANOTHER ITEM
@@ -29,13 +29,27 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                         // If input is not empty, push value to preview and
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
-                            if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(&app.key_input);
-                                app.toggle_editing();
+                            // FOR ARRAYS IN OBJECTS
+                            if app.editing_object {
+                                if app.object_values.values.contains_key("") {
+                                    let is_array = app.object_values.values.get("").unwrap();
+                                    if is_array.is_array() {
+                                        let key = app.key_input.clone();
+                                        app.update_object_key("", &key);
+                                    }
+                                } else {
+                                    // Push visual queue that user is editing an array
+                                    app.add_object_value(None, Some(ValueType::Array));
+                                }
+
+                            // FOR REGULAR ARRAYS
+                            } else if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(&app.key_input, true);
                             } else {
                                 app.editing_preview.update_key("", &app.key_input);
-                                app.toggle_editing();
                             }
+
+                            app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
@@ -44,45 +58,20 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                             // SUBMIT -- ELSE DON'T
                             if !app.array_values.is_empty() {
                                 app.save_key_value();
-                                app.array_values.reset();
-                            } else {
-                                app.value_input = String::from("cantSubmitNoValue");
                             }
                         } else {
                             app.store_array_values(); // need to store value_input as array value before saving
                             app.save_key_value();
-                            app.array_values.reset();
                         }
                     }
                 }
             }
         }
         KeyCode::Char(value) => {
-            if let Some(editing) = &app.currently_editing {
-                // Need this to avoid adding characters when CTRL is pressed
-                if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    match editing {
-                        CurrentlyEditing::Key => {
-                            app.key_input.push(value);
-                        }
-                        CurrentlyEditing::Value => {
-                            app.value_input.push(value);
-                        }
-                    }
-                }
-            }
+            app.push_char(key, value);
         }
         KeyCode::Backspace => {
-            if let Some(editing) = &app.currently_editing {
-                match editing {
-                    CurrentlyEditing::Key => {
-                        app.key_input.pop();
-                    }
-                    CurrentlyEditing::Value => {
-                        app.value_input.pop();
-                    }
-                }
-            }
+            app.del_char();
         }
         KeyCode::BackTab => {
             if let Some(editing) = &app.currently_editing {
@@ -93,12 +82,7 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
-            app.array_values.reset();
-            app.editing_preview.reset();
-            app.key_input = String::new();
-            app.value_input = String::new();
-            app.current_screen = CurrentScreen::Main;
-            app.currently_editing = None; // exit editing mode
+            app.handle_escape();
         }
         KeyCode::Tab => {
             if let Some(editing) = &app.currently_editing {
@@ -106,25 +90,43 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                     CurrentlyEditing::Key => {
                         // dont toggle if no key or no values
                         if !app.key_input.is_empty() {
-                            if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(&app.key_input);
-                                app.toggle_editing();
+                            if app.editing_object && app.object_values.values.contains_key("") {
+                                let is_array = app.object_values.values.get("").unwrap();
+                                if is_array.is_array() {
+                                    let key = app.key_input.clone();
+                                    app.update_object_key("", &key);
+                                }
+                            } else if app.editing_object {
+                                // Push visual queue that user is editing an array
+                                app.add_object_value(None, Some(ValueType::Array));
+                            } else if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(&app.key_input, true);
                             } else {
                                 app.editing_preview.update_key("", &app.key_input);
-                                app.toggle_editing();
                             }
+                            app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
                         if app.value_input.is_empty() {
-                            app.editing_preview.update_key(&app.key_input, "");
-                            app.toggle_editing();
+                            if app.editing_object {
+                                let key = app.key_input.clone();
+                                app.update_object_key(&key, "");
+                            } else {
+                                app.editing_preview.update_key(&app.key_input, "");
+                            }
+                        } else if app.editing_object {
+                            let key = app.key_input.clone();
+                            app.store_array_values();
+                            app.update_object_key(&key, "");
+                            app.value_input = String::new();
                         } else {
                             app.store_array_values(); // need to store value_input as array value
                             app.editing_preview.update_key(&app.key_input, "");
-                            app.toggle_editing();
                             app.value_input = String::new();
                         }
+
+                        app.toggle_editing();
                     }
                 }
             }
