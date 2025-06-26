@@ -14,13 +14,12 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
                             if app.object_values.key.is_empty() {
                                 app.object_values.add_key(app.key_input.to_owned());
                                 app.editing_object = true;
-                                app.editing_preview
-                                    .new_object(app.object_values.key.to_owned());
+                                app.editing_preview.new_object(&app.object_values.key);
                                 app.key_input = String::new();
                                 app.value_type = ValueType::String;
                                 app.current_screen = CurrentScreen::Editing(ValueType::String);
                             } else {
-                                app.editing_preview.new_object(app.key_input.to_owned());
+                                app.editing_preview.new_object(&app.key_input);
                                 app.toggle_editing();
                             }
                         }

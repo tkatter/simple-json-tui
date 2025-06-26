@@ -2,7 +2,7 @@ use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::App;
 use crate::CurrentlyEditing;
-use crate::app::{CurrentScreen, ValueType};
+use crate::app::CurrentScreen;
 
 pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
     // KEYMAP TO ADD ANOTHER ITEM
@@ -30,11 +30,10 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
                             if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(app.key_input.to_owned());
+                                app.editing_preview.new_array(&app.key_input);
                                 app.toggle_editing();
                             } else {
-                                app.editing_preview
-                                    .update_key(&"".to_string(), app.key_input.to_owned());
+                                app.editing_preview.update_key("", &app.key_input);
                                 app.toggle_editing();
                             }
                         }
@@ -46,8 +45,6 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                             if !app.array_values.is_empty() {
                                 app.save_key_value();
                                 app.array_values.reset();
-                                app.value_type = ValueType::String; // reset value type
-                                app.current_screen = CurrentScreen::Main;
                             } else {
                                 app.value_input = String::from("cantSubmitNoValue");
                             }
@@ -55,8 +52,6 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                             app.store_array_values(); // need to store value_input as array value before saving
                             app.save_key_value();
                             app.array_values.reset();
-                            app.value_type = ValueType::String; // reset value type
-                            app.current_screen = CurrentScreen::Main;
                         }
                     }
                 }
@@ -112,24 +107,21 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                         // dont toggle if no key or no values
                         if !app.key_input.is_empty() {
                             if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(app.key_input.to_owned());
+                                app.editing_preview.new_array(&app.key_input);
                                 app.toggle_editing();
                             } else {
-                                app.editing_preview
-                                    .update_key(&"".to_string(), app.key_input.to_owned());
+                                app.editing_preview.update_key("", &app.key_input);
                                 app.toggle_editing();
                             }
                         }
                     }
                     CurrentlyEditing::Value => {
                         if app.value_input.is_empty() {
-                            app.editing_preview
-                                .update_key(&app.key_input, "".to_string());
+                            app.editing_preview.update_key(&app.key_input, "");
                             app.toggle_editing();
                         } else {
                             app.store_array_values(); // need to store value_input as array value
-                            app.editing_preview
-                                .update_key(&app.key_input, "".to_string());
+                            app.editing_preview.update_key(&app.key_input, "");
                             app.toggle_editing();
                             app.value_input = String::new();
                         }

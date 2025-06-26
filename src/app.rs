@@ -113,7 +113,7 @@ impl App {
 
         self.array_values.push_value(value);
         self.editing_preview.update_value(
-            self.key_input.to_owned(),
+            &self.key_input,
             serde_json::Value::Array(self.array_values.values.to_owned()),
         );
     }
@@ -124,27 +124,21 @@ impl App {
             serde_json::Value::String(self.value_input.to_owned()),
         );
         self.editing_preview.push(
-            self.object_values.key.to_owned(),
+            &self.object_values.key,
             serde_json::Value::Object(self.object_values.values.to_owned()),
         );
     }
 
     pub fn save_key_value(&mut self) {
-        let key = self.key_input.clone();
+        let mut key: &str = &self.key_input;
         let value = match &self.value_type {
             ValueType::String => serde_json::Value::String(self.value_input.clone()),
             ValueType::Array => {
                 let values: Vec<serde_json::Value> = self.array_values.values.clone();
                 serde_json::Value::Array(values)
             }
-            // ValueType::Object => {
-            //     let pair = self.value_input.clone().split_once('=').unwrap();
-            //     let (key, val) = pair.to_owned();
-            //     let obj =
-            //         create_object(key.to_string(), serde_json::Value::String(val.to_string()));
-            //     serde_json::Value::Object(obj)
-            // }
             ValueType::Object => {
+                key = &self.object_values.key;
                 let mut new_map: Map<String, serde_json::Value> = Map::new();
                 new_map.append(&mut self.object_values.values);
                 serde_json::Value::Object(new_map)
@@ -159,19 +153,26 @@ impl App {
                 serde_json::Value::Number(number_val)
             }
         };
-        // For Array and HashMap --> Create a Vec<Value> | HashMap<Value, Value> and push K: V
-        // pairs to it!!
 
         if self.editing_object {
-            self.object_values.push(key, value);
+            let mut new_map: Map<String, serde_json::Value> = Map::new();
+            new_map.append(&mut self.object_values.values);
+
+            self.object_values.push(key.to_string(), value);
+            self.editing_preview
+                .push(&self.object_values.key, serde_json::Value::Object(new_map));
         } else {
-            self.pairs.insert(key, value);
+            self.pairs.insert(key.to_string(), value);
         }
+
+        self.object_values = ObjectValues::default();
+        self.array_values = ArrayValues::default();
 
         self.editing_preview.reset();
         self.key_input = String::new();
         self.value_input = String::new();
         self.currently_editing = None;
+        self.current_screen = CurrentScreen::Main;
     }
 
     pub fn toggle_editing(&mut self) {
@@ -208,7 +209,7 @@ impl App {
             ValueType::Array => {
                 self.value_type = ValueType::String;
                 self.current_screen = CurrentScreen::Editing(ValueType::String);
-                self.editing_preview.new_string(self.key_input.to_owned());
+                self.editing_preview.new_string(&self.key_input);
             }
         }
     }

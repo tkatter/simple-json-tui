@@ -1,7 +1,7 @@
 use ratatui::Terminal;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::crossterm::event::{
-    self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind,
+    self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
 };
 use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal::{
@@ -90,11 +90,22 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 // skips events that are not KeyEventKind::Press
                 continue;
             }
+            if let CurrentScreen::Editing(_) = app.current_screen {
+                if key.code == KeyCode::Char('s') && key.modifiers.contains(KeyModifiers::CONTROL) {
+                    // `store_array_values` updates the editing_preview
+                    if !app.object_values.values.is_empty() {
+                        app.editing_object = false;
+                        app.value_type = ValueType::Object;
+                        app.save_key_value();
+                    }
+                }
+            }
             match app.current_screen {
                 CurrentScreen::Main | CurrentScreen::Start => match key.code {
                     KeyCode::Char('s') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Selection
                     }
+                    //
                     // KeyCode::Char('e') => {
                     //     app.current_screen = CurrentScreen::Editing(ValueType::default());
                     //     app.currently_editing = Some(CurrentlyEditing::Key);

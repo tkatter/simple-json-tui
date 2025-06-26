@@ -16,7 +16,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                             if app.editing_object {
                                 app.add_object_value();
                             } else {
-                                app.editing_preview.new_string(app.key_input.to_owned());
+                                app.editing_preview.new_string(&app.key_input);
                             }
                             app.currently_editing = Some(CurrentlyEditing::Value);
                         }
@@ -33,7 +33,6 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                                 app.currently_editing = Some(CurrentlyEditing::Key); // reset to Key
                             } else if !app.value_input.is_empty() {
                                 app.save_key_value();
-                                app.current_screen = CurrentScreen::Main;
                             }
                         }
                     }
@@ -73,7 +72,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // Push key_input to editing preview and toggle
                         // focus to value_input if not empty
                         if !app.key_input.is_empty() {
-                            app.editing_preview.new_string(app.key_input.to_owned());
+                            app.editing_preview.new_string(&app.key_input);
                             app.toggle_editing();
                         }
                     }
