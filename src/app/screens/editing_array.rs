@@ -2,7 +2,6 @@ use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::App;
 use crate::CurrentlyEditing;
-use crate::app::CurrentScreen;
 
 pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
     // KEYMAP TO ADD ANOTHER ITEM
@@ -93,12 +92,7 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
-            app.array_values.reset();
-            app.editing_preview.reset();
-            app.key_input = String::new();
-            app.value_input = String::new();
-            app.current_screen = CurrentScreen::Main;
-            app.currently_editing = None; // exit editing mode
+            app.handle_escape();
         }
         KeyCode::Tab => {
             if let Some(editing) = &app.currently_editing {

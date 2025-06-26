@@ -1,7 +1,6 @@
 use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::App;
-use crate::CurrentScreen;
 use crate::CurrentlyEditing;
 
 pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
@@ -61,9 +60,7 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
         }
         KeyCode::Esc => {
             // Reset state and return to main screen
-            app.editing_preview.reset();
-            app.currently_editing = None;
-            app.current_screen = CurrentScreen::Main;
+            app.handle_escape();
         }
         KeyCode::Tab => {
             if let Some(editing) = &app.currently_editing {

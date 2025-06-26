@@ -6,17 +6,17 @@ use serde_json::{Map, Number};
 use std::collections::HashMap;
 // use std::{fs::File, io::BufWriter};
 
+#[derive(Default)]
 pub enum CurrentScreen {
     Editing(ValueType),
+    #[default]
     Main,
     Quitting,
     Selection,
     Start,
 }
 
-#[derive(Default)]
 pub enum CurrentlyEditing {
-    #[default]
     Key,
     Value,
 }
@@ -51,29 +51,22 @@ impl ArrayValues {
     }
 }
 
+#[derive(Default)]
 pub struct ObjectValues {
     pub key: String,
     pub values: Map<String, serde_json::Value>,
 }
 
-impl Default for ObjectValues {
-    fn default() -> Self {
-        Self {
-            key: String::new(),
-            values: Map::new(),
-        }
-    }
-}
-
 impl ObjectValues {
-    pub fn add_key(&mut self, key: String) {
-        self.key = key;
+    pub fn add_key(&mut self, key: &str) {
+        self.key = key.to_string();
     }
     pub fn push(&mut self, key: String, value: serde_json::Value) {
         self.values.insert(key, value);
     }
 }
 
+#[derive(Default)]
 pub struct App {
     pub key_input: String,
     pub value_input: String,
@@ -120,7 +113,7 @@ impl App {
 
     pub fn add_object_value(&mut self) {
         self.object_values.push(
-            self.key_input.to_owned(),
+            self.key_input.clone(),
             serde_json::Value::String(self.value_input.to_owned()),
         );
         self.editing_preview.push(
@@ -184,6 +177,10 @@ impl App {
         } else {
             self.currently_editing = Some(CurrentlyEditing::Key);
         }
+    }
+
+    pub fn handle_escape(&mut self) {
+        App::default();
     }
 
     pub fn toggle_value_type(&mut self) {

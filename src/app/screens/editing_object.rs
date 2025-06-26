@@ -12,7 +12,7 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
                     CurrentlyEditing::Key => {
                         if !app.key_input.is_empty() {
                             if app.object_values.key.is_empty() {
-                                app.object_values.add_key(app.key_input.to_owned());
+                                app.object_values.add_key(&app.key_input);
                                 app.editing_object = true;
                                 app.editing_preview.new_object(&app.object_values.key);
                                 app.key_input = String::new();
@@ -52,8 +52,7 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Esc => {
-            app.current_screen = CurrentScreen::Main;
-            app.currently_editing = None; // exit editing mode
+            app.handle_escape();
         }
         KeyCode::Tab => {
             app.toggle_editing();

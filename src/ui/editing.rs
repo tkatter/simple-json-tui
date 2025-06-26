@@ -68,7 +68,7 @@ fn default_editing_screen(
         frame.render_widget(preview_list, default_editing_layout[1]);
     } else if !app.pairs.is_empty() {
         frame.render_widget(
-            input_box(CurrentlyEditing::default(), &ValueType::default(), ""),
+            input_box(CurrentlyEditing::Key, &ValueType::default(), ""),
             default_editing_layout[0],
         );
         frame.render_widget(preview_list, default_editing_layout[1]);
