@@ -1,3 +1,4 @@
+use crate::app::{UpdateMap, ValueType};
 use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::App;
@@ -29,17 +30,15 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                let empty_vec: Vec<serde_json::Value> = Vec::new();
-                                app.add_object_value(Some(serde_json::Value::Array(empty_vec)));
+                                // Push visual queue that user is editing an array
+                                app.add_object_value(None, Some(ValueType::Array));
+                                app.toggle_editing();
+                            } else if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(&app.key_input, true);
                                 app.toggle_editing();
                             } else {
-                                if app.editing_preview.is_empty() {
-                                    app.editing_preview.new_array(&app.key_input);
-                                    app.toggle_editing();
-                                } else {
-                                    app.editing_preview.update_key("", &app.key_input);
-                                    app.toggle_editing();
-                                }
+                                app.editing_preview.update_key("", &app.key_input);
+                                app.toggle_editing();
                             }
                         }
                     }
@@ -64,19 +63,6 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
         }
         KeyCode::Char(value) => {
             app.push_char(key, value);
-            // if let Some(editing) = &app.currently_editing {
-            //     // Need this to avoid adding characters when CTRL is pressed
-            //     if !key.modifiers.contains(KeyModifiers::CONTROL) {
-            //         match editing {
-            //             CurrentlyEditing::Key => {
-            //                 app.key_input.push(value);
-            //             }
-            //             CurrentlyEditing::Value => {
-            //                 app.value_input.push(value);
-            //             }
-            //         }
-            //     }
-            // }
         }
         KeyCode::Backspace => {
             app.del_char();
@@ -98,8 +84,11 @@ pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
                     CurrentlyEditing::Key => {
                         // dont toggle if no key or no values
                         if !app.key_input.is_empty() {
-                            if app.editing_preview.is_empty() {
-                                app.editing_preview.new_array(&app.key_input);
+                            if app.editing_object {
+                                // Push visual queue that user is editing an array
+                                app.add_object_value(None, Some(ValueType::Array));
+                            } else if app.editing_preview.is_empty() {
+                                app.editing_preview.new_array(&app.key_input, true);
                                 app.toggle_editing();
                             } else {
                                 app.editing_preview.update_key("", &app.key_input);

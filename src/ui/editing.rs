@@ -3,12 +3,15 @@ use ratatui::{
     widgets::{List, ListItem, Paragraph},
 };
 
-use crate::ui::ratatui::{
-    Frame,
-    layout::{Constraint, Layout, Rect},
-    style::{Style, Stylize},
-    text::{Line, Span},
-    widgets::{Block, BorderType, Borders},
+use crate::{
+    app::UpdateMap,
+    ui::ratatui::{
+        Frame,
+        layout::{Constraint, Layout, Rect},
+        style::{Style, Stylize},
+        text::{Line, Span},
+        widgets::{Block, BorderType, Borders},
+    },
 };
 
 use crate::{

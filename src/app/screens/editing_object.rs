@@ -2,7 +2,7 @@ use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::App;
 use crate::CurrentlyEditing;
-use crate::app::{CurrentScreen, ValueType};
+use crate::app::{CurrentScreen, UpdateMap, ValueType};
 
 pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
@@ -16,12 +16,12 @@ pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
                             if app.object_values.key.is_empty() {
                                 app.object_values.add_key(&app.key_input);
                                 app.editing_object = true;
-                                app.editing_preview.new_object(&app.object_values.key);
+                                app.editing_preview.new_object(&app.object_values.key, true);
                                 app.key_input = String::new();
                                 app.value_type = ValueType::String;
                                 app.current_screen = CurrentScreen::Editing(ValueType::String);
                             } else {
-                                app.editing_preview.new_object(&app.key_input);
+                                app.editing_preview.new_object(&app.key_input, true);
                                 app.toggle_editing();
                             }
                         }
