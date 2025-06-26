@@ -118,6 +118,17 @@ impl App {
         );
     }
 
+    pub fn add_object_value(&mut self) {
+        self.object_values.push(
+            self.key_input.to_owned(),
+            serde_json::Value::String(self.value_input.to_owned()),
+        );
+        self.editing_preview.push(
+            self.object_values.key.to_owned(),
+            serde_json::Value::Object(self.object_values.values.to_owned()),
+        );
+    }
+
     pub fn save_key_value(&mut self) {
         let key = self.key_input.clone();
         let value = match &self.value_type {
@@ -187,7 +198,6 @@ impl App {
                 self.current_screen = CurrentScreen::Editing(ValueType::Bool);
             }
             ValueType::Bool => {
-                self.editing_object = true;
                 self.value_type = ValueType::Object;
                 self.current_screen = CurrentScreen::Editing(ValueType::Object)
             }
