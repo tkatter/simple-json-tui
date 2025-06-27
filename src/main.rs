@@ -18,7 +18,8 @@ mod ui;
 use app::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
     screens::{
-        match_array_editing, match_object_editing, match_selection_screen, match_string_editing,
+        match_array_editing, match_bool_editing, match_object_editing, match_selection_screen,
+        match_string_editing,
     },
 };
 use ui::ui;
@@ -114,8 +115,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 CurrentScreen::Editing(ValueType::String) if key.kind == KeyEventKind::Press => {
                     match_string_editing(&key, app)
                 }
-                CurrentScreen::Editing(ValueType::Bool) if key.kind == KeyEventKind::Press => {
-                    match_string_editing(&key, app)
+                CurrentScreen::Editing(ValueType::Bool(_)) if key.kind == KeyEventKind::Press => {
+                    match_bool_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Number) if key.kind == KeyEventKind::Press => {
                     match_string_editing(&key, app)

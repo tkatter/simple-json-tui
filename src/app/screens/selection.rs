@@ -27,7 +27,7 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
                 let selected_value = match selected_idx {
                     0 => ValueType::String,
                     1 => ValueType::Number,
-                    2 => ValueType::Bool,
+                    2 => ValueType::Bool(true),
                     3 => ValueType::Object,
                     4 => ValueType::Array,
                     _ => ValueType::default(),

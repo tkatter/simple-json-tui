@@ -29,14 +29,12 @@ pub enum CurrentlyEditing {
 #[derive(Default, Clone, PartialEq, Eq, Debug)]
 pub enum ValueType {
     Array,
-    Bool,
+    Bool(bool),
     Number,
     Object,
     #[default]
     String,
 }
-
-// pub enum ObjectTypes {
 
 #[derive(Default)]
 pub struct App {
@@ -109,6 +107,7 @@ impl App {
                 ValueType::String => self.object_values.new_string(key, false),
                 ValueType::Array => self.object_values.new_array(key, false),
                 ValueType::Object => self.object_values.new_object(key, false),
+                ValueType::Bool(_) => self.object_values.new_bool(key, false),
                 _ => {}
             }
         } else if let Some(value) = value {
@@ -241,10 +240,10 @@ impl App {
                 self.current_screen = CurrentScreen::Editing(ValueType::Number);
             }
             ValueType::Number => {
-                self.value_type = ValueType::Bool;
-                self.current_screen = CurrentScreen::Editing(ValueType::Bool);
+                self.value_type = ValueType::Bool(true);
+                self.current_screen = CurrentScreen::Editing(ValueType::Bool(true));
             }
-            ValueType::Bool => {
+            ValueType::Bool(_) => {
                 self.value_type = ValueType::Object;
                 self.current_screen = CurrentScreen::Editing(ValueType::Object)
             }

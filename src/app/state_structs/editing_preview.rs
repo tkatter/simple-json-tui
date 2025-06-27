@@ -63,4 +63,12 @@ pub trait UpdateMap {
         let empty_obj: Map<String, serde_json::Value> = Map::new();
         self.push(key, serde_json::Value::Object(empty_obj));
     }
+
+    fn new_bool(&mut self, key: &str, reset: bool) {
+        if reset {
+            self.reset();
+        }
+
+        self.push(key, serde_json::Value::Bool(true));
+    }
 }

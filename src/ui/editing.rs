@@ -1,81 +1,51 @@
-use ratatui::{
-    layout::Alignment,
-    widgets::{List, ListItem, Paragraph},
-};
-
 use crate::{
-    app::UpdateMap,
-    ui::ratatui::{
-        Frame,
-        layout::{Constraint, Layout, Rect},
-        style::{Style, Stylize},
-        text::{Line, Span},
-        widgets::{Block, BorderType, Borders},
+    app::{App, CurrentlyEditing, UpdateMap, ValueType},
+    ui::{
+        ratatui::{
+            Frame,
+            layout::{Alignment, Constraint, Layout, Rect},
+            style::{Style, Stylize},
+            text::{Line, Span},
+            widgets::{Block, BorderType, Borders, List, ListItem, Paragraph},
+        },
+        theme::ColorScheme,
     },
 };
 
-use crate::{
-    app::{App, CurrentlyEditing, ValueType},
-    ui::theme::ColorScheme,
-};
-const BORDERSTYLE: ColorScheme = ColorScheme::Sky;
+const DEFAULT_BORDERSTYLE: ColorScheme = ColorScheme::Sky;
+const ACTIVE_BORDERSTYLE: ColorScheme = ColorScheme::Yellow;
+
 pub fn render_editing(frame: &mut Frame<'_>, app: &mut App, area: Rect) {
     // LAYOUT
-    let default_editing_layout =
+    let main_editing_layout =
         Layout::vertical(vec![Constraint::Length(3), Constraint::Min(1)]).split(area);
 
-    let object_kv_area =
-        Layout::horizontal(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-            .split(default_editing_layout[0]);
+    let kv_area = Layout::horizontal(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
+        .split(main_editing_layout[0]);
 
     let parsed_preview = &app.editing_preview.parse();
     let preview_list = render_editing_preview(parsed_preview);
 
     // DRAW EDITING SCREEN BASED ON APP STATE
-    if app.editing_object {
-        frame.render_widget(
-            input_box(CurrentlyEditing::Key, &app.value_type, &app.key_input),
-            object_kv_area[0],
-        );
-        frame.render_widget(
-            input_box(CurrentlyEditing::Value, &app.value_type, &app.value_input),
-            object_kv_area[1],
-        );
-        frame.render_widget(preview_list, default_editing_layout[1]);
-    } else {
-        default_editing_screen(frame, app, default_editing_layout, &preview_list);
-    }
-}
-
-fn default_editing_screen(
-    frame: &mut Frame<'_>,
-    app: &mut App,
-    default_editing_layout: std::rc::Rc<[Rect]>,
-    preview_list: &List<'_>,
-) {
-    if let Some(state) = &app.currently_editing {
-        match state {
-            CurrentlyEditing::Key => {
-                frame.render_widget(
-                    input_box(CurrentlyEditing::Key, &app.value_type, &app.key_input),
-                    default_editing_layout[0],
-                );
-            }
-            CurrentlyEditing::Value => {
-                frame.render_widget(
-                    input_box(CurrentlyEditing::Value, &app.value_type, &app.value_input),
-                    default_editing_layout[0],
-                );
-            }
-        }
-        frame.render_widget(preview_list, default_editing_layout[1]);
-    } else if !app.pairs.is_empty() {
-        frame.render_widget(
-            input_box(CurrentlyEditing::Key, &ValueType::default(), ""),
-            default_editing_layout[0],
-        );
-        frame.render_widget(preview_list, default_editing_layout[1]);
-    }
+    frame.render_widget(
+        input_box(
+            CurrentlyEditing::Key,
+            &app.currently_editing,
+            &app.value_type,
+            &app.key_input,
+        ),
+        kv_area[0],
+    );
+    frame.render_widget(
+        input_box(
+            CurrentlyEditing::Value,
+            &app.currently_editing,
+            &app.value_type,
+            &app.value_input,
+        ),
+        kv_area[1],
+    );
+    frame.render_widget(preview_list, main_editing_layout[1]);
 }
 
 fn render_editing_preview(parsed: &str) -> List<'_> {
@@ -83,7 +53,7 @@ fn render_editing_preview(parsed: &str) -> List<'_> {
     let input_preview = Block::new()
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::new().fg(BORDERSTYLE.v()))
+        .border_style(Style::new().fg(DEFAULT_BORDERSTYLE.v()))
         .style(Style::new().fg(ColorScheme::Green.v()));
 
     // CREATE PREVIEW FROM `serde_json::to_string_pretty()`
@@ -114,41 +84,59 @@ fn render_editing_preview(parsed: &str) -> List<'_> {
 
 fn input_box<'a>(
     cur_editing: CurrentlyEditing,
+    active: &Option<CurrentlyEditing>,
     cur_type: &ValueType,
     text: &'a str,
 ) -> Paragraph<'a> {
     let key_block = Block::new()
-        .title(" Key ")
-        .bold()
+        .title(Line::from(vec![
+            Span::styled(" Key ", Style::default()).bold(),
+        ]))
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::new().fg(BORDERSTYLE.v()))
+        .border_style(Style::new().fg(match active {
+            Some(CurrentlyEditing::Key) => ACTIVE_BORDERSTYLE.v(),
+            _ => DEFAULT_BORDERSTYLE.v(),
+        }))
         .style(Style::new().fg(ColorScheme::Green.v()));
 
     let value_block = Block::new()
         .title(Line::from(vec![
-            Span::styled(" Value", Style::default()),
+            Span::styled(" Value", Style::default()).bold(),
             Span::styled(" - ", Style::default()),
             Span::styled(
                 match cur_type {
                     ValueType::String => "String ",
                     ValueType::Number => "Number ",
-                    ValueType::Bool => "Boolean ",
+                    ValueType::Bool(_) => "Boolean ",
                     ValueType::Object => "Object ",
                     ValueType::Array => "Array ",
                 },
                 Style::new().fg(ColorScheme::Red.v()),
             ),
         ]))
-        .bold()
         .title_alignment(Alignment::Center)
         .borders(Borders::ALL)
         .border_type(BorderType::Rounded)
-        .border_style(Style::new().fg(BORDERSTYLE.v()))
+        .border_style(Style::new().fg(match active {
+            Some(CurrentlyEditing::Value) => ACTIVE_BORDERSTYLE.v(),
+            _ => DEFAULT_BORDERSTYLE.v(),
+        }))
         .style(Style::new().fg(ColorScheme::Green.v()));
 
-    let input_val = Paragraph::new(text);
+    // TODO: Make so only affects value block
+    let input_content = if let ValueType::Bool(x) = cur_type {
+        match x {
+            true => "true",
+            false => "false",
+        }
+    } else {
+        text
+    };
+
+    let input_val = Paragraph::new(input_content);
+
     match cur_editing {
         CurrentlyEditing::Key => input_val.block(key_block),
         CurrentlyEditing::Value => input_val.block(value_block),
