@@ -24,6 +24,8 @@ use app::{
 };
 use ui::ui;
 
+use crate::app::screens::match_num_editing;
+
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
 
@@ -119,7 +121,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     match_bool_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Number) if key.kind == KeyEventKind::Press => {
-                    match_string_editing(&key, app)
+                    match_num_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Array) if key.kind == KeyEventKind::Press => {
                     match_array_editing(&key, app)
