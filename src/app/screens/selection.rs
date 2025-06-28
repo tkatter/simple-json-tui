@@ -44,7 +44,13 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Char('q') | KeyCode::Char('h') | KeyCode::Esc | KeyCode::Left => {
-            app.handle_escape();
+            // Don't clear object values or pairs
+            app.key_input = String::new();
+            app.value_input = String::new();
+            app.value_type = ValueType::default();
+            app.current_screen = CurrentScreen::default();
+            app.currently_editing = None;
+            app.selection_screen = SelectionScreen::default();
         }
         KeyCode::Char('1') => app.selection_screen.state.select(Some(0)),
         KeyCode::Char('2') => app.selection_screen.state.select(Some(1)),

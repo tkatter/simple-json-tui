@@ -88,6 +88,14 @@ fn input_box<'a>(
     cur_type: &ValueType,
     text: &'a str,
 ) -> Paragraph<'a> {
+    let (value_input, value_color) = if let ValueType::Bool(x) = cur_type {
+        match x {
+            true => ("true", ColorScheme::Blue.v()),
+            false => ("false", ColorScheme::Red.v()),
+        }
+    } else {
+        (text, ColorScheme::Green.v())
+    };
     let key_block = Block::new()
         .title(Line::from(vec![
             Span::styled(" Key ", Style::default()).bold(),
@@ -123,22 +131,10 @@ fn input_box<'a>(
             Some(CurrentlyEditing::Value) => ACTIVE_BORDERSTYLE.v(),
             _ => DEFAULT_BORDERSTYLE.v(),
         }))
-        .style(Style::new().fg(ColorScheme::Green.v()));
-
-    // TODO: Make so only affects value block
-    let input_content = if let ValueType::Bool(x) = cur_type {
-        match x {
-            true => "true",
-            false => "false",
-        }
-    } else {
-        text
-    };
-
-    let input_val = Paragraph::new(input_content);
+        .style(Style::new().fg(value_color));
 
     match cur_editing {
-        CurrentlyEditing::Key => input_val.block(key_block),
-        CurrentlyEditing::Value => input_val.block(value_block),
+        CurrentlyEditing::Key => Paragraph::new(text).block(key_block),
+        CurrentlyEditing::Value => Paragraph::new(value_input).block(value_block),
     }
 }

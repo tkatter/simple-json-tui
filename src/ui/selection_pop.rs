@@ -76,24 +76,3 @@ fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
     let [area] = Layout::vertical([vertical]).flex(Flex::Center).areas(area);
     area
 }
-
-#[allow(dead_code)]
-fn render_main_blocks(frame: &mut Frame<'_>, main_layout: std::rc::Rc<[ratatui::prelude::Rect]>) {
-    let block1 = Block::bordered()
-        .title(" Left Side ")
-        .title_alignment(Alignment::Center)
-        .bold()
-        .borders(Borders::ALL)
-        .border_type(BorderType::Thick)
-        .style(Style::new().fg(ColorScheme::Peach.v()));
-    let block2 = Block::bordered()
-        .title(" Right Side ")
-        .title_alignment(Alignment::Center)
-        .bold()
-        .borders(Borders::ALL)
-        .border_type(BorderType::Thick)
-        .style(Style::new().fg(ColorScheme::Peach.v()));
-
-    frame.render_widget(block1, main_layout[0]);
-    frame.render_widget(block2, main_layout[2]);
-}

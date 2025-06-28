@@ -1,7 +1,7 @@
 use serde_json::Map;
 
 pub struct EditingPreview {
-    values: Map<String, serde_json::Value>,
+    pub values: Map<String, serde_json::Value>,
 }
 
 impl Default for EditingPreview {

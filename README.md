@@ -32,3 +32,7 @@ A simple quality of life TUI application to make writing JSON less of a headache
 ## Preview
 
 - [ ] Figure out word/text wrapping
+
+## New Features
+
+- [ ] Implement JSON schema

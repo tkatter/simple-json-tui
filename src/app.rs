@@ -181,6 +181,13 @@ impl App {
                 new_map.append(&mut self.object_values.values);
                 serde_json::Value::Object(new_map)
             }
+            ValueType::Bool(x) => {
+                if *x {
+                    serde_json::Value::Bool(true)
+                } else {
+                    serde_json::Value::Bool(false)
+                }
+            }
             _ => {
                 let number_val: Number = self
                     .value_input
@@ -221,6 +228,31 @@ impl App {
             };
         } else {
             self.currently_editing = Some(CurrentlyEditing::Key);
+        }
+    }
+
+    pub fn toggle_bool(&mut self) {
+        if let ValueType::Bool(x) = &self.value_type {
+            match x {
+                true => {
+                    self.value_type = ValueType::Bool(false);
+                    if self.editing_object {
+                        self.add_object_value(Some(serde_json::Value::Bool(false)), None)
+                    } else {
+                        self.editing_preview
+                            .push(&self.key_input, serde_json::Value::Bool(false));
+                    }
+                }
+                false => {
+                    self.value_type = ValueType::Bool(true);
+                    if self.editing_object {
+                        self.add_object_value(Some(serde_json::Value::Bool(true)), None)
+                    } else {
+                        self.editing_preview
+                            .push(&self.key_input, serde_json::Value::Bool(true));
+                    }
+                }
+            }
         }
     }
 

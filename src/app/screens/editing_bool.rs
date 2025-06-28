@@ -1,7 +1,7 @@
 use crate::App;
 use crate::CurrentlyEditing;
 use crate::app::{UpdateMap, ValueType};
-use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
+use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 pub fn match_bool_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
@@ -13,17 +13,26 @@ pub fn match_bool_editing(key: &KeyEvent, app: &mut App) {
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                app.add_object_value(None, Some(ValueType::Bool(true)));
+                                if app.object_values.values.contains_key("")
+                                    && app.object_values.values.get("").unwrap().is_boolean()
+                                {
+                                    let new_key = app.key_input.clone();
+                                    app.update_object_key("", &new_key);
+                                } else {
+                                    app.add_object_value(None, Some(ValueType::Bool(true)));
+                                }
+                            } else if app.editing_preview.values.contains_key("")
+                                && app.editing_preview.values.get("").unwrap().is_boolean()
+                            {
+                                app.editing_preview.update_key("", &app.key_input);
                             } else {
                                 app.editing_preview.new_bool(&app.key_input, true);
                             }
-                            app.currently_editing = Some(CurrentlyEditing::Value);
+                            app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
-                        if !app.value_input.is_empty() {
-                            app.save_key_value();
-                        }
+                        app.save_key_value();
                     }
                 }
             }
@@ -55,11 +64,21 @@ pub fn match_bool_editing(key: &KeyEvent, app: &mut App) {
                         // focus to value_input if not empty
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                app.add_object_value(None, Some(ValueType::String));
+                                if app.object_values.values.contains_key("")
+                                    && app.object_values.values.get("").unwrap().is_boolean()
+                                {
+                                    let new_key = app.key_input.clone();
+                                    app.update_object_key("", &new_key);
+                                } else {
+                                    app.add_object_value(None, Some(ValueType::Bool(true)));
+                                }
+                            } else if app.editing_preview.values.contains_key("")
+                                && app.editing_preview.values.get("").unwrap().is_boolean()
+                            {
+                                app.editing_preview.update_key("", &app.key_input);
                             } else {
-                                app.editing_preview.new_string(&app.key_input, true);
+                                app.editing_preview.new_bool(&app.key_input, true);
                             }
-
                             app.toggle_editing();
                         }
                     }
@@ -68,17 +87,38 @@ pub fn match_bool_editing(key: &KeyEvent, app: &mut App) {
                         // toggling focus
                         if app.editing_object {
                             let key = app.key_input.clone();
-                            app.remove_object_entry(&key);
+                            app.update_object_key(&key, "");
                         } else if !app.editing_preview.is_empty() {
-                            app.editing_preview.reset();
+                            app.editing_preview.update_key(&app.key_input, "");
                         }
                         app.toggle_editing();
                     }
                 }
             }
         }
+        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+            if let Some(editing) = &app.currently_editing {
+                match editing {
+                    CurrentlyEditing::Key => {}
+                    CurrentlyEditing::Value => app.toggle_bool(),
+                }
+            }
+        }
         KeyCode::Char(value) => {
-            app.push_char(key, value);
+            if let Some(editing) = &app.currently_editing {
+                // Need this to avoid adding characters when CTRL is pressed
+                if !key.modifiers.contains(KeyModifiers::CONTROL) {
+                    match editing {
+                        CurrentlyEditing::Key => {
+                            app.key_input.push(value);
+                        }
+                        CurrentlyEditing::Value => match value {
+                            'h' | 'j' | 'k' | 'l' => app.toggle_bool(),
+                            _ => {}
+                        },
+                    }
+                }
+            }
         }
         _ => {}
     }
