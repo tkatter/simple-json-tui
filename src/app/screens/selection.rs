@@ -1,9 +1,10 @@
-use ratatui::{
-    crossterm::event::{KeyCode, KeyEvent},
-    widgets::ListState,
+use crate::{
+    App, CurrentScreen, CurrentlyEditing, ValueType,
+    ratatui::{
+        crossterm::event::{KeyCode, KeyEvent},
+        widgets::ListState,
+    },
 };
-
-use crate::app::{App, CurrentScreen, CurrentlyEditing, ValueType};
 
 #[derive(Debug)]
 pub struct SelectionScreen {

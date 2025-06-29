@@ -8,26 +8,19 @@ mod theme;
 use components::Header;
 
 use crate::{
-    app::{App, CurrentScreen},
-    ui::{
-        bottom_status_bar::render_bottom_status_bar,
-        // components::{EditingBox, EditingId},
-        editing::render_editing,
-        preview::render_preview_json,
-        selection_pop::render_selection_list,
-        start::render_start_screen,
-        theme::ColorScheme,
+    App, CurrentScreen,
+    ratatui::{
+        Frame,
+        layout::{Constraint, Direction, Layout, Rect},
+        style::{Color, Style},
+        text::Text,
+        widgets::{Block, Borders, Clear, Paragraph, Wrap},
     },
-};
-
-#[allow(clippy::single_component_path_imports)]
-pub(crate) use ratatui;
-use ratatui::{
-    Frame,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
-    text::Text,
-    widgets::{Block, Borders, Clear, Paragraph, Wrap},
+    ui::{
+        bottom_status_bar::render_bottom_status_bar, editing::render_editing,
+        preview::render_preview_json, selection_pop::render_selection_list,
+        start::render_start_screen, theme::ColorScheme,
+    },
 };
 
 // helper function to create a centered rect using up certain percentage of the available rect `r`

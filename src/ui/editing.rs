@@ -1,15 +1,14 @@
 use crate::{
-    app::{App, CurrentlyEditing, UpdateMap, ValueType},
-    ui::{
-        ratatui::{
-            Frame,
-            layout::{Alignment, Constraint, Layout, Rect},
-            style::{Style, Stylize},
-            text::{Line, Span},
-            widgets::{Block, BorderType, Borders, List, ListItem, Paragraph},
-        },
-        theme::ColorScheme,
+    App, CurrentlyEditing, ValueType,
+    ratatui::{
+        Frame,
+        layout::{Alignment, Constraint, Layout, Rect},
+        style::{Style, Stylize},
+        text::{Line, Span},
+        widgets::{Block, BorderType, Borders, List, ListItem, Paragraph},
     },
+    traits::UpdateMap,
+    ui::ColorScheme,
 };
 
 const DEFAULT_BORDERSTYLE: ColorScheme = ColorScheme::Sky;

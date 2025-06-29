@@ -1,12 +1,13 @@
-use ratatui::{
-    buffer::Buffer,
-    layout::Rect,
-    style::{Modifier, Style},
-    text::{Line, Text},
-    widgets::{Block, BorderType, Borders, Padding, Paragraph, Widget},
+use crate::{
+    ratatui::{
+        buffer::Buffer,
+        layout::Rect,
+        style::{Modifier, Style},
+        text::{Line, Text},
+        widgets::{Block, BorderType, Borders, Padding, Paragraph, Widget},
+    },
+    ui::ColorScheme,
 };
-
-use crate::ui::theme::ColorScheme;
 
 pub struct Header {
     content: String,

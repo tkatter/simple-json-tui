@@ -1,8 +1,8 @@
-use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
-
-use crate::App;
-use crate::CurrentlyEditing;
-use crate::app::{CurrentScreen, UpdateMap, ValueType};
+use crate::{
+    App, CurrentScreen, CurrentlyEditing, ValueType,
+    app::UpdateMap,
+    ratatui::crossterm::event::{KeyCode, KeyEvent},
+};
 
 pub fn match_object_editing(key: &KeyEvent, app: &mut App) {
     match key.code {

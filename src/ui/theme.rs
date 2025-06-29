@@ -1,4 +1,4 @@
-use ratatui::style::Color;
+use crate::ratatui::style::Color;
 use std::str::FromStr;
 
 #[allow(dead_code)]

@@ -1,8 +1,8 @@
-use crate::app::{UpdateMap, ValueType};
-use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent};
-
-use crate::App;
-use crate::CurrentlyEditing;
+use crate::{
+    App, CurrentlyEditing, ValueType,
+    app::UpdateMap,
+    ratatui::crossterm::event::{KeyCode, KeyEvent},
+};
 
 pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
     match key.code {
@@ -14,11 +14,22 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
                         // switch focus to value_input
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                app.add_object_value(None, Some(ValueType::String));
+                                if app.object_values.values.contains_key("")
+                                    && app.object_values.values.get("").unwrap().is_string()
+                                {
+                                    let new_key = app.key_input.clone();
+                                    app.update_object_key("", &new_key);
+                                } else {
+                                    app.add_object_value(None, Some(ValueType::String));
+                                }
+                            } else if app.editing_preview.values.contains_key("")
+                                && app.editing_preview.values.get("").unwrap().is_string()
+                            {
+                                app.editing_preview.update_key("", &app.key_input);
                             } else {
                                 app.editing_preview.new_string(&app.key_input, true);
                             }
-                            app.currently_editing = Some(CurrentlyEditing::Value);
+                            app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
@@ -45,26 +56,44 @@ pub fn match_string_editing(key: &KeyEvent, app: &mut App) {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
-                        // Push key_input to editing preview and toggle
-                        // focus to value_input if not empty
                         if !app.key_input.is_empty() {
                             if app.editing_object {
-                                app.add_object_value(None, Some(ValueType::String));
+                                if app.object_values.values.contains_key("")
+                                    && app.object_values.values.get("").unwrap().is_string()
+                                {
+                                    let new_key = app.key_input.clone();
+                                    app.update_object_key("", &new_key);
+                                } else {
+                                    app.add_object_value(None, Some(ValueType::String));
+                                }
+                            } else if app.editing_preview.values.contains_key("")
+                                && app.editing_preview.values.get("").unwrap().is_string()
+                            {
+                                app.editing_preview.update_key("", &app.key_input);
                             } else {
                                 app.editing_preview.new_string(&app.key_input, true);
                             }
-
                             app.toggle_editing();
                         }
                     }
                     CurrentlyEditing::Value => {
-                        // If editing_preview has value, clear it before
-                        // toggling focus
                         if app.editing_object {
+                            if !app.value_input.is_empty() {
+                                app.object_values.push(
+                                    &app.key_input,
+                                    serde_json::Value::String(app.value_input.clone()),
+                                );
+                            }
                             let key = app.key_input.clone();
-                            app.remove_object_entry(&key);
+                            app.update_object_key(&key, "");
                         } else if !app.editing_preview.is_empty() {
-                            app.editing_preview.reset();
+                            if !app.value_input.is_empty() {
+                                app.editing_preview.push(
+                                    &app.key_input,
+                                    serde_json::Value::String(app.value_input.clone()),
+                                );
+                            }
+                            app.editing_preview.update_key(&app.key_input, "");
                         }
                         app.toggle_editing();
                     }

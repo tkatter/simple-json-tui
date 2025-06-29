@@ -1,13 +1,14 @@
 pub mod screens;
 pub mod state_structs;
-use ratatui::crossterm::event::{KeyEvent, KeyModifiers};
-pub use state_structs::editing_preview::UpdateMap;
-// use json_helpers::{create_array, create_object};
 use screens::selection::SelectionScreen;
 use serde_json::{Map, Number};
 use state_structs::{arr::ArrayValues, editing_preview::EditingPreview, obj::ObjectValues};
-// use serde_json::{json, to_value};
 use std::collections::HashMap;
+
+use crate::{
+    ratatui::crossterm::event::{KeyEvent, KeyModifiers},
+    traits::UpdateMap,
+};
 
 // use std::{fs::File, io::BufWriter};
 
@@ -108,20 +109,11 @@ impl App {
                 ValueType::Array => self.object_values.new_array(key, false),
                 ValueType::Object => self.object_values.new_object(key, false),
                 ValueType::Bool(_) => self.object_values.new_bool(key, false),
-                _ => {}
+                ValueType::Number => self.object_values.new_number(key, false),
             }
         } else if let Some(value) = value {
             self.object_values.push(key, value);
         }
-
-        self.editing_preview.push(
-            &self.object_values.key,
-            serde_json::Value::Object(self.object_values.values.to_owned()),
-        );
-    }
-
-    pub fn remove_object_entry(&mut self, key: &str) {
-        self.object_values.remove_entry(key);
 
         self.editing_preview.push(
             &self.object_values.key,
@@ -188,7 +180,7 @@ impl App {
                     serde_json::Value::Bool(false)
                 }
             }
-            _ => {
+            ValueType::Number => {
                 let number_val: Number = self
                     .value_input
                     .clone()

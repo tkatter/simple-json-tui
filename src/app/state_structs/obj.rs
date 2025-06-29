@@ -1,5 +1,6 @@
-use super::editing_preview::UpdateMap;
 use serde_json::Map;
+
+use crate::traits::UpdateMap;
 
 #[derive(Default)]
 pub struct ObjectValues {

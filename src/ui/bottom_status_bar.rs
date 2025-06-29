@@ -1,14 +1,13 @@
-use crate::ui::ratatui::{
-    Frame,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
-    text::{Line, Span},
-    widgets::{Block, Borders, Paragraph},
-};
-
 use crate::{
-    app::{App, CurrentScreen, CurrentlyEditing},
-    ui::theme::ColorScheme,
+    App, CurrentScreen, CurrentlyEditing,
+    ratatui::{
+        Frame,
+        layout::{Constraint, Direction, Layout, Rect},
+        style::{Color, Style},
+        text::{Line, Span},
+        widgets::{Block, Borders, Paragraph},
+    },
+    ui::ColorScheme,
 };
 
 pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: Rect) {

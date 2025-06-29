@@ -1,15 +1,14 @@
-use crate::ui::ratatui::{
-    Frame,
-    layout::{Constraint, Flex, Layout, Rect},
-    style::Style,
-    text::{Line, Text},
-    widgets::Paragraph,
-    widgets::{Block, BorderType, Borders},
-};
-
 use crate::{
-    app::{App, CurrentScreen},
-    ui::theme::ColorScheme,
+    App, CurrentScreen,
+    ratatui::{
+        Frame,
+        layout::{Constraint, Flex, Layout, Rect},
+        style::Style,
+        text::{Line, Text},
+        widgets::Paragraph,
+        widgets::{Block, BorderType, Borders},
+    },
+    ui::ColorScheme,
 };
 
 pub fn render_start_screen(frame: &mut Frame<'_>, app: &mut App) {

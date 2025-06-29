@@ -1,11 +1,16 @@
-use ratatui::Terminal;
-use ratatui::backend::{Backend, CrosstermBackend};
-use ratatui::crossterm::event::{
-    self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
-};
-use ratatui::crossterm::execute;
-use ratatui::crossterm::terminal::{
-    EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode,
+#[allow(clippy::single_component_path_imports)]
+pub(crate) use ratatui;
+use ratatui::{
+    Terminal,
+    backend::{Backend, CrosstermBackend},
+    crossterm::{
+        event::{
+            self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind,
+            KeyModifiers,
+        },
+        execute,
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
+    },
 };
 use std::{
     error::Error,
@@ -14,17 +19,16 @@ use std::{
 };
 
 mod app;
+mod traits;
 mod ui;
 use app::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
     screens::{
-        match_array_editing, match_bool_editing, match_object_editing, match_selection_screen,
-        match_string_editing,
+        match_array_editing, match_bool_editing, match_num_editing, match_object_editing,
+        match_selection_screen, match_string_editing,
     },
 };
 use ui::ui;
-
-use crate::app::screens::match_num_editing;
 
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";

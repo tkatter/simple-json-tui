@@ -1,11 +1,14 @@
-use crate::ui::ratatui::{
-    Frame,
-    layout::{Alignment, Constraint, Flex, Layout, Rect},
-    style::{Style, Stylize},
-    text::Text,
-    widgets::{Block, Borders, Clear, HighlightSpacing, List, ListItem, block::BorderType},
+use crate::{
+    App, CurrentScreen,
+    ratatui::{
+        Frame,
+        layout::{Alignment, Constraint, Flex, Layout, Rect},
+        style::{Style, Stylize},
+        text::Text,
+        widgets::{Block, Borders, Clear, HighlightSpacing, List, ListItem, block::BorderType},
+    },
+    ui::ColorScheme,
 };
-use crate::{App, app::CurrentScreen, ui::ColorScheme};
 
 pub(crate) fn render_selection_list(frame: &mut Frame<'_>, app: &mut App) {
     let mut list_items: Vec<ListItem> = Vec::new();

@@ -1,8 +1,8 @@
-use crate::app::{UpdateMap, ValueType};
-use crate::ui::ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
-
-use crate::App;
-use crate::CurrentlyEditing;
+use crate::{
+    App, CurrentlyEditing, ValueType,
+    app::UpdateMap,
+    ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
+};
 
 pub fn match_array_editing(key: &KeyEvent, app: &mut App) {
     // KEYMAP TO ADD ANOTHER ITEM
