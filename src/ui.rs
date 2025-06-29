@@ -1,6 +1,8 @@
 mod bottom_status_bar;
 mod components;
 mod editing;
+mod file_screen;
+mod helpers;
 mod preview;
 mod selection_pop;
 mod start;
@@ -8,7 +10,7 @@ mod theme;
 use components::Header;
 
 use crate::{
-    App, CurrentScreen,
+    App, CurrentScreen, FileState,
     ratatui::{
         Frame,
         layout::{Constraint, Direction, Layout, Rect},
@@ -18,8 +20,8 @@ use crate::{
     },
     ui::{
         bottom_status_bar::render_bottom_status_bar, editing::render_editing,
-        preview::render_preview_json, selection_pop::render_selection_list,
-        start::render_start_screen, theme::ColorScheme,
+        file_screen::render_file_prompt, preview::render_preview_json,
+        selection_pop::render_selection_list, start::render_start_screen, theme::ColorScheme,
     },
 };
 
@@ -46,13 +48,14 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         .split(popup_layout[1])[1]
 }
 
-pub fn ui(frame: &mut Frame, app: &mut App) {
+pub fn ui(frame: &mut Frame, app: &mut App, file_state: &mut FileState) {
     // SET A BACKGROUND COLOR FOR THE ENTIRE FRAME
     let background_color = Block::new().style(Style::new().bg(ColorScheme::Crust.v()));
     frame.render_widget(background_color, frame.area());
 
     // RENDER START SCREEN
     render_start_screen(frame, app);
+    render_file_prompt(frame, app, file_state);
 
     // MAIN LAYOUT
     let chunks = Layout::default()
@@ -72,9 +75,12 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
         Constraint::Min(1),
     ])
     .split(chunks[0]);
-    let header = Header::new("filename.json".to_string());
-    frame.render_widget(Clear, header_layout[1]);
-    frame.render_widget(header, header_layout[1]);
+
+    if !file_state.fname_input.is_empty() {
+        let header = Header::new(&file_state.fname_input);
+        frame.render_widget(Clear, header_layout[1]);
+        frame.render_widget(header, header_layout[1]);
+    }
 
     // EDITING/PREVIEW LAYOUT
     let edit_preview_layout =

@@ -2,15 +2,15 @@ use crate::{
     App, CurrentScreen,
     ratatui::{
         Frame,
-        layout::{Alignment, Constraint, Flex, Layout, Rect},
+        layout::{Alignment, Constraint},
         style::{Style, Stylize},
         text::Text,
         widgets::{Block, Borders, Clear, HighlightSpacing, List, ListItem, block::BorderType},
     },
-    ui::ColorScheme,
+    ui::{ColorScheme, helpers::center},
 };
 
-pub(crate) fn render_selection_list(frame: &mut Frame<'_>, app: &mut App) {
+pub fn render_selection_list(frame: &mut Frame<'_>, app: &mut App) {
     let mut list_items: Vec<ListItem> = Vec::new();
 
     // Create styled ListItems
@@ -69,13 +69,4 @@ pub(crate) fn render_selection_list(frame: &mut Frame<'_>, app: &mut App) {
         frame.render_widget(list_block, select_block_area);
         frame.render_stateful_widget(list, list_area, &mut app.selection_screen.state);
     }
-}
-
-// Helper function to center a Rect within a given Rect/area
-fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
-    let [area] = Layout::horizontal([horizontal])
-        .flex(Flex::Center)
-        .areas(area);
-    let [area] = Layout::vertical([vertical]).flex(Flex::Center).areas(area);
-    area
 }

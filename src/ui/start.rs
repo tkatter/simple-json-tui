@@ -2,13 +2,12 @@ use crate::{
     App, CurrentScreen,
     ratatui::{
         Frame,
-        layout::{Constraint, Flex, Layout, Rect},
+        layout::Constraint,
         style::Style,
         text::{Line, Text},
-        widgets::Paragraph,
-        widgets::{Block, BorderType, Borders},
+        widgets::{Block, BorderType, Borders, Paragraph},
     },
-    ui::ColorScheme,
+    ui::{ColorScheme, helpers::center},
 };
 
 pub fn render_start_screen(frame: &mut Frame<'_>, app: &mut App) {
@@ -20,6 +19,7 @@ pub fn render_start_screen(frame: &mut Frame<'_>, app: &mut App) {
     let start_text = Text::from(vec![
         Line::from("Welcome to the App!"),
         Line::from("Press 's' to get started"),
+        Line::from("Press 'f' to enter a filename"),
     ])
     .style(Style::new().fg(ColorScheme::Peach.v()));
 
@@ -35,12 +35,4 @@ pub fn render_start_screen(frame: &mut Frame<'_>, app: &mut App) {
         frame.render_widget(block1, frame.area());
         frame.render_widget(start_paragraph, p_area);
     };
-}
-
-fn center(area: Rect, horizontal: Constraint, vertical: Constraint) -> Rect {
-    let [area] = Layout::horizontal([horizontal])
-        .flex(Flex::Center)
-        .areas(area);
-    let [area] = Layout::vertical([vertical]).flex(Flex::Center).areas(area);
-    area
 }

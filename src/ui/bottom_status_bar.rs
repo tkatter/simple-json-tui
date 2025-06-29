@@ -15,6 +15,7 @@ pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: Rect
         // first half of the text
         match app.current_screen {
             CurrentScreen::Start => Span::default(),
+            CurrentScreen::FilePrompt => Span::default(),
             CurrentScreen::Main => {
                 Span::styled("Normal Mode", Style::default().fg(ColorScheme::Green.v()))
             }
@@ -55,6 +56,7 @@ pub fn render_bottom_status_bar(frame: &mut Frame<'_>, app: &mut App, area: Rect
     let current_keys_hint = {
         match app.current_screen {
             CurrentScreen::Start => Span::default(),
+            CurrentScreen::FilePrompt => Span::default(),
             CurrentScreen::Main => Span::styled(
                 "q to quit / e to make new pair",
                 Style::default().fg(Color::Red),

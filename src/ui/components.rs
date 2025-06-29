@@ -14,8 +14,10 @@ pub struct Header {
 }
 
 impl Header {
-    pub fn new(content: String) -> Header {
-        Header { content }
+    pub fn new(content: &str) -> Header {
+        Header {
+            content: content.to_string(),
+        }
     }
 }
 

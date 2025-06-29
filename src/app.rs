@@ -1,11 +1,12 @@
 pub mod screens;
 pub mod state_structs;
-use screens::selection::SelectionScreen;
 use serde_json::{Map, Number};
+pub use state_structs::selection_state::SelectionScreen;
 use state_structs::{arr::ArrayValues, editing_preview::EditingPreview, obj::ObjectValues};
 use std::collections::HashMap;
 
 use crate::{
+    file_state::FileState,
     ratatui::crossterm::event::{KeyEvent, KeyModifiers},
     traits::UpdateMap,
 };
@@ -15,6 +16,7 @@ use crate::{
 #[derive(Default)]
 pub enum CurrentScreen {
     Editing(ValueType),
+    FilePrompt,
     #[default]
     Main,
     Quitting,
@@ -249,6 +251,13 @@ impl App {
     }
 
     pub fn handle_escape(&mut self) {
+        // self.value_type = ValueType::default();
+        // self.value_input = String::new();
+        // self.key_input = String::new();
+        // self.editing_preview = EditingPreview::default();
+        // self.current_screen = CurrentScreen::default();
+        // self.currently_editing = None;
+        // self.array_values = ArrayValues::default();
         *self = Self {
             pairs: self.pairs.to_owned(),
             ..Self::default()
@@ -287,5 +296,14 @@ impl App {
         let output = serde_json::to_string_pretty(&self.pairs)?;
         println!("{}", output);
         Ok(())
+    }
+
+    pub fn write_file(
+        &mut self,
+        file_state: &mut FileState,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let json = serde_json::to_string_pretty(&self.pairs)?;
+
+        file_state.write_file(json)
     }
 }

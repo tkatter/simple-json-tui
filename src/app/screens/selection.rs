@@ -1,25 +1,8 @@
 use crate::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
-    ratatui::{
-        crossterm::event::{KeyCode, KeyEvent},
-        widgets::ListState,
-    },
+    app::SelectionScreen,
+    ratatui::crossterm::event::{KeyCode, KeyEvent},
 };
-
-#[derive(Debug)]
-pub struct SelectionScreen {
-    pub options: Vec<&'static str>,
-    pub state: ListState,
-}
-
-impl Default for SelectionScreen {
-    fn default() -> Self {
-        Self {
-            options: vec!["String", "Number", "Bool", "Object", "Array"],
-            state: ListState::default(),
-        }
-    }
-}
 
 pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
     match key.code {

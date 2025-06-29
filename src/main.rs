@@ -12,6 +12,7 @@ use ratatui::{
         terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
     },
 };
+
 use std::{
     error::Error,
     fs::{DirBuilder, File},
@@ -19,15 +20,17 @@ use std::{
 };
 
 mod app;
+mod file_state;
 mod traits;
 mod ui;
 use app::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
     screens::{
-        match_array_editing, match_bool_editing, match_num_editing, match_object_editing,
-        match_selection_screen, match_string_editing,
+        match_array_editing, match_bool_editing, match_file_screen, match_num_editing,
+        match_object_editing, match_selection_screen, match_start_screen, match_string_editing,
     },
 };
+use file_state::FileState;
 use ui::ui;
 
 #[allow(unused)]
@@ -48,6 +51,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     //create app and run it
     let mut app = App::new();
+    let mut file_state = FileState::default();
 
     // TODO: Create writeable tmp file
     // if create_tmp_file().is_none() {
@@ -66,7 +70,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     //     }
     // };
 
-    let res = run_app(&mut terminal, &mut app);
+    let res = run_app(&mut terminal, &mut app, &mut file_state);
 
     // application post-run steps
     // restore terminal state
@@ -75,7 +79,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     // handle result of run_app
     if let Ok(do_print) = res {
         if do_print {
-            app.print_json()?;
+            // app.print_json()?;
+            app.write_file(&mut file_state)?;
         }
     } else if let Err(err) = res {
         println!("{err:?}");
@@ -84,11 +89,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<bool> {
+fn run_app<B: Backend>(
+    terminal: &mut Terminal<B>,
+    app: &mut App,
+    file_state: &mut FileState,
+) -> io::Result<bool> {
     loop {
         // `draw()` returns a `Frame` which we pass to our `ui` function
         // with an immutable reference to the app to handle rendering
-        terminal.draw(|frame| ui(frame, app))?;
+        terminal.draw(|frame| ui(frame, app, file_state))?;
 
         // polling for keyboard events - could set up a thread to handle this
         if let Event::Key(key) = event::read()? {
@@ -108,6 +117,12 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 }
             }
             match app.current_screen {
+                CurrentScreen::FilePrompt if key.kind == KeyEventKind::Press => {
+                    match_file_screen(&key, app, file_state);
+                }
+                CurrentScreen::Start if key.kind == KeyEventKind::Press => {
+                    match_start_screen(&key, app)
+                }
                 CurrentScreen::Main | CurrentScreen::Start => match key.code {
                     KeyCode::Char('s') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Selection
