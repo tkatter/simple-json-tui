@@ -53,23 +53,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
     let mut file_state = FileState::default();
 
-    // TODO: Create writeable tmp file
-    // if create_tmp_file().is_none() {
-    //     return restore_terminal(&mut terminal);
-    // }
-    //
-    // #[allow(unused_variables, unused_mut)]
-    // let mut tmp_file: BufWriter<File> = create_tmp_file().unwrap();
-    // tmp_file.write_all(b"tedt").unwrap();
-    // tmp_file.flush().unwrap();
-    // let mut tmp_file = match create_tmp_file() {
-    //     Some(file) => file,
-    //     None => {
-    //         println!("Failed to create temporary file for JSON storage");
-    //         restore_terminal(terminal)?;
-    //     }
-    // };
-
     let res = run_app(&mut terminal, &mut app, &mut file_state);
 
     // application post-run steps
@@ -123,7 +106,7 @@ fn run_app<B: Backend>(
                 CurrentScreen::Start if key.kind == KeyEventKind::Press => {
                     match_start_screen(&key, app)
                 }
-                CurrentScreen::Main | CurrentScreen::Start => match key.code {
+                CurrentScreen::Main if key.kind == KeyEventKind::Press => match key.code {
                     KeyCode::Char('s') | KeyCode::Enter => {
                         app.current_screen = CurrentScreen::Selection
                     }

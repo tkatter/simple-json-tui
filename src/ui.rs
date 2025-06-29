@@ -4,6 +4,7 @@ mod editing;
 mod file_screen;
 mod helpers;
 mod preview;
+mod quitting;
 mod selection_pop;
 mod start;
 mod theme;
@@ -14,19 +15,19 @@ use crate::{
     ratatui::{
         Frame,
         layout::{Constraint, Direction, Layout, Rect},
-        style::{Color, Style},
-        text::Text,
-        widgets::{Block, Borders, Clear, Paragraph, Wrap},
+        style::Style,
+        widgets::{Block, Clear},
     },
     ui::{
         bottom_status_bar::render_bottom_status_bar, editing::render_editing,
         file_screen::render_file_prompt, preview::render_preview_json,
-        selection_pop::render_selection_list, start::render_start_screen, theme::ColorScheme,
+        quitting::render_quitting_screen, selection_pop::render_selection_list,
+        start::render_start_screen, theme::ColorScheme,
     },
 };
 
 // helper function to create a centered rect using up certain percentage of the available rect `r`
-fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+fn _centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     // cut the given rect into three vertical pieces
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
@@ -106,25 +107,26 @@ pub fn ui(frame: &mut Frame, app: &mut App, file_state: &mut FileState) {
     render_selection_list(frame, app);
 
     // EXIT POPUP
-    if let CurrentScreen::Quitting = app.current_screen {
-        // clear frame
-        frame.render_widget(Clear, frame.area());
-
-        let popup_block = Block::default()
-            .title("Y/N")
-            .borders(Borders::NONE)
-            .style(Style::default().bg(Color::DarkGray));
-
-        let exit_text = Text::styled(
-            "Would you like to output the buffer as JSON?",
-            Style::default().fg(Color::Red),
-        );
-
-        let exit_paragraph = Paragraph::new(exit_text)
-            .block(popup_block)
-            .wrap(Wrap { trim: false });
-
-        let area = centered_rect(60, 25, frame.area());
-        frame.render_widget(exit_paragraph, area);
-    }
+    render_quitting_screen(frame, app, file_state);
+    // if let CurrentScreen::Quitting = app.current_screen {
+    //     // clear frame
+    //     frame.render_widget(Clear, frame.area());
+    //
+    //     let popup_block = Block::default()
+    //         .title("Y/N")
+    //         .borders(Borders::NONE)
+    //         .style(Style::default().bg(Color::DarkGray));
+    //
+    //     let exit_text = Text::styled(
+    //         "Would you like to output the buffer as JSON?",
+    //         Style::default().fg(Color::Red),
+    //     );
+    //
+    //     let exit_paragraph = Paragraph::new(exit_text)
+    //         .block(popup_block)
+    //         .wrap(Wrap { trim: false });
+    //
+    //     let area = centered_rect(60, 25, frame.area());
+    //     frame.render_widget(exit_paragraph, area);
+    // }
 }
