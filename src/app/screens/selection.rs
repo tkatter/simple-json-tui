@@ -14,6 +14,7 @@ pub fn match_type_selection(key: &KeyEvent, app: &mut App) {
                     2 => ValueType::Bool(true),
                     3 => ValueType::Object,
                     4 => ValueType::Array,
+                    5 => ValueType::Null,
                     _ => ValueType::default(),
                 };
                 app.value_type = selected_value.to_owned();
@@ -41,6 +42,7 @@ pub fn match_type_selection(key: &KeyEvent, app: &mut App) {
         KeyCode::Char('3') => app.selection_screen.state.select(Some(2)),
         KeyCode::Char('4') => app.selection_screen.state.select(Some(3)),
         KeyCode::Char('5') => app.selection_screen.state.select(Some(4)),
+        KeyCode::Char('6') => app.selection_screen.state.select(Some(5)),
         KeyCode::Char('j') | KeyCode::Down => {
             let list_size = app.selection_screen.list_size;
             if app.selection_screen.state.selected().is_some() {

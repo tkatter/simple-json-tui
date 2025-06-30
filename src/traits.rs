@@ -44,6 +44,13 @@ pub trait UpdateMap {
         self.push(key, serde_json::Value::Bool(true));
     }
 
+    fn new_null(&mut self, key: &str, reset: bool) {
+        if reset {
+            self.reset();
+        }
+        self.push(key, serde_json::Value::Null);
+    }
+
     fn new_number(&mut self, key: &str, reset: bool) {
         if reset {
             self.reset();

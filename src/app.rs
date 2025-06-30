@@ -32,6 +32,7 @@ pub enum CurrentlyEditing {
 pub enum ValueType {
     Array,
     Bool(bool),
+    Null,
     Number,
     Object,
     #[default]
@@ -110,6 +111,7 @@ impl App {
                 ValueType::Array => self.object_values.new_array(key, false),
                 ValueType::Object => self.object_values.new_object(key, false),
                 ValueType::Bool(_) => self.object_values.new_bool(key, false),
+                ValueType::Null => self.object_values.new_null(key, false),
                 ValueType::Number => self.object_values.new_number(key, false),
             }
         } else if let Some(value) = value {
@@ -181,6 +183,7 @@ impl App {
                     serde_json::Value::Bool(false)
                 }
             }
+            ValueType::Null => serde_json::Value::Null,
             ValueType::Number => {
                 let number_val: Number = self
                     .value_input
@@ -264,6 +267,8 @@ impl App {
     pub fn toggle_value_type(&mut self) {
         let current_type = &self.value_type;
 
+        // TODO: Push a new_<value_type> to editing_preview
+        // or object_values when toggling between values
         match *current_type {
             ValueType::String => {
                 self.value_type = ValueType::Number;
@@ -282,6 +287,10 @@ impl App {
                 self.current_screen = CurrentScreen::Editing(ValueType::Array)
             }
             ValueType::Array => {
+                self.value_type = ValueType::Null;
+                self.current_screen = CurrentScreen::Editing(ValueType::Null);
+            }
+            ValueType::Null => {
                 self.value_type = ValueType::String;
                 self.current_screen = CurrentScreen::Editing(ValueType::String);
                 self.editing_preview.new_string(&self.key_input, true);

@@ -10,9 +10,9 @@ pub struct SelectionScreen {
 impl Default for SelectionScreen {
     fn default() -> Self {
         Self {
-            options: vec!["String", "Number", "Bool", "Object", "Array"],
+            options: vec!["String", "Number", "Bool", "Object", "Array", "Null"],
             state: ListState::default(),
-            list_size: 5,
+            list_size: 6,
         }
     }
 }

@@ -33,7 +33,7 @@ use app::{
 use file_state::FileState;
 use ui::ui;
 
-use crate::app::screens::match_quitting_screen;
+use crate::app::screens::{match_null_editing, match_quitting_screen};
 
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
@@ -132,6 +132,9 @@ fn run_app<B: Backend>(
                 }
                 CurrentScreen::Editing(ValueType::Bool(_)) if key.kind == KeyEventKind::Press => {
                     match_bool_editing(&key, app)
+                }
+                CurrentScreen::Editing(ValueType::Null) if key.kind == KeyEventKind::Press => {
+                    match_null_editing(&key, app)
                 }
                 CurrentScreen::Editing(ValueType::Number) if key.kind == KeyEventKind::Press => {
                     match_num_editing(&key, app)

@@ -92,6 +92,8 @@ fn input_box<'a>(
             true => ("true", ColorScheme::Blue.v()),
             false => ("false", ColorScheme::Red.v()),
         }
+    } else if let ValueType::Null = cur_type {
+        ("null", ColorScheme::Mauve.v())
     } else {
         (text, ColorScheme::Green.v())
     };
@@ -119,6 +121,7 @@ fn input_box<'a>(
                     ValueType::Bool(_) => "Boolean ",
                     ValueType::Object => "Object ",
                     ValueType::Array => "Array ",
+                    ValueType::Null => "Null ",
                 },
                 Style::new().fg(ColorScheme::Red.v()),
             ),
