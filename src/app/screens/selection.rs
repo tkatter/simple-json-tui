@@ -4,7 +4,7 @@ use crate::{
     ratatui::crossterm::event::{KeyCode, KeyEvent},
 };
 
-pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
+pub fn match_type_selection(key: &KeyEvent, app: &mut App) {
     match key.code {
         KeyCode::Enter | KeyCode::Char('l') | KeyCode::Right => {
             if let Some(selected_idx) = app.selection_screen.state.selected() {
@@ -42,9 +42,10 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
         KeyCode::Char('4') => app.selection_screen.state.select(Some(3)),
         KeyCode::Char('5') => app.selection_screen.state.select(Some(4)),
         KeyCode::Char('j') | KeyCode::Down => {
+            let list_size = app.selection_screen.list_size;
             if app.selection_screen.state.selected().is_some() {
                 let mut next = app.selection_screen.state.selected().unwrap() + 1;
-                if next >= 5 {
+                if next >= list_size {
                     next = 0
                 }
                 app.selection_screen.state.select(Some(next));
@@ -53,16 +54,23 @@ pub fn match_selection_screen(key: &KeyEvent, app: &mut App) {
             }
         }
         KeyCode::Char('k') | KeyCode::Up => {
+            let list_size = app.selection_screen.list_size;
             if app.selection_screen.state.selected().is_some() {
-                if app.selection_screen.state.selected().unwrap() == 0 {
-                    let next = 4;
+                if app
+                    .selection_screen
+                    .state
+                    .selected()
+                    .expect("Verified that something is selected")
+                    == 0
+                {
+                    let next = list_size;
                     app.selection_screen.state.select(Some(next));
                 } else {
                     let next = app.selection_screen.state.selected().unwrap() - 1;
                     app.selection_screen.state.select(Some(next));
                 }
             } else {
-                app.selection_screen.state.select(Some(4));
+                app.selection_screen.state.select(Some(list_size));
             }
         }
         _ => {}

@@ -27,7 +27,7 @@ use app::{
     App, CurrentScreen, CurrentlyEditing, ValueType,
     screens::{
         match_array_editing, match_bool_editing, match_file_screen, match_num_editing,
-        match_object_editing, match_selection_screen, match_start_screen, match_string_editing,
+        match_object_editing, match_start_screen, match_string_editing, match_type_selection,
     },
 };
 use file_state::FileState;
@@ -37,6 +37,12 @@ use crate::app::screens::match_quitting_screen;
 
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
+
+enum Print {
+    File,
+    Stdout,
+    None,
+}
 
 // Using stderr because stderr is piped differently than stdout
 // this allows us to let users pipe the output of our program to a file
@@ -62,10 +68,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     restore_terminal(&mut terminal)?;
 
     // handle result of run_app
-    if let Ok(do_print) = res {
-        if do_print {
-            // app.print_json()?;
-            app.write_file(&mut file_state)?;
+    if let Ok(print_kind) = res {
+        match print_kind {
+            Print::File => app.write_file(&mut file_state)?,
+            Print::Stdout => app.print_json()?,
+            Print::None => {}
         }
     } else if let Err(err) = res {
         println!("{err:?}");
@@ -78,7 +85,7 @@ fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     app: &mut App,
     file_state: &mut FileState,
-) -> io::Result<bool> {
+) -> io::Result<Print> {
     loop {
         // `draw()` returns a `Frame` which we pass to our `ui` function
         // with an immutable reference to the app to handle rendering
@@ -106,7 +113,9 @@ fn run_app<B: Backend>(
                     match_file_screen(&key, app, file_state);
                 }
                 CurrentScreen::Start if key.kind == KeyEventKind::Press => {
-                    match_start_screen(&key, app)
+                    if let Some(return_value) = match_start_screen(&key, app) {
+                        return return_value;
+                    }
                 }
                 CurrentScreen::Main if key.kind == KeyEventKind::Press => match key.code {
                     KeyCode::Char('s') | KeyCode::Enter => {
@@ -117,7 +126,7 @@ fn run_app<B: Backend>(
                     }
                     _ => {}
                 },
-                CurrentScreen::Selection => match_selection_screen(&key, app),
+                CurrentScreen::Selection => match_type_selection(&key, app),
                 CurrentScreen::Editing(ValueType::String) if key.kind == KeyEventKind::Press => {
                     match_string_editing(&key, app)
                 }
@@ -134,9 +143,8 @@ fn run_app<B: Backend>(
                     match_object_editing(&key, app)
                 }
                 CurrentScreen::Quitting if key.kind == KeyEventKind::Press => {
-                    match match_quitting_screen(&key, app) {
-                        Ok(b) => return Ok(b),
-                        Err(e) => return Err(e),
+                    if let Some(return_value) = match_quitting_screen(&key, app, file_state) {
+                        return return_value;
                     }
                 }
                 _ => {}

@@ -14,5 +14,5 @@ pub use editing_object::match_object_editing;
 pub use editing_string::match_string_editing;
 pub use file_screen::match_file_screen;
 pub use quitting_screen::match_quitting_screen;
-pub use selection::match_selection_screen;
+pub use selection::match_type_selection;
 pub use start_screen::match_start_screen;

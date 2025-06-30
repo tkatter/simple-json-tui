@@ -12,7 +12,7 @@ use crate::{
     traits::UpdateMap,
 };
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub enum CurrentScreen {
     Editing(ValueType),
     FilePrompt,
@@ -28,7 +28,7 @@ pub enum CurrentlyEditing {
     Value,
 }
 
-#[derive(Default, Clone, PartialEq, Eq, Debug)]
+#[derive(Default, Clone, Copy, PartialEq, Eq, Debug)]
 pub enum ValueType {
     Array,
     Bool(bool),
@@ -250,10 +250,15 @@ impl App {
     }
 
     pub fn handle_escape(&mut self) {
-        *self = Self {
-            pairs: self.pairs.to_owned(),
-            ..Self::default()
-        };
+        // Avoids cloning an empty HashMap
+        if self.pairs.is_empty() {
+            *self = Self::default()
+        } else {
+            *self = Self {
+                pairs: self.pairs.to_owned(),
+                ..Self::default()
+            }
+        }
     }
 
     pub fn toggle_value_type(&mut self) {
@@ -284,7 +289,7 @@ impl App {
         }
     }
 
-    pub fn _print_json(&self) -> serde_json::Result<()> {
+    pub fn print_json(&self) -> serde_json::Result<()> {
         let output = serde_json::to_string_pretty(&self.pairs)?;
         println!("{}", output);
         Ok(())

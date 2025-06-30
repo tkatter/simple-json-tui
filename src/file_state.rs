@@ -4,8 +4,11 @@ use std::{
     path::Path,
 };
 
+use crate::app::CurrentScreen;
+
 #[derive(Default)]
 pub struct FileState {
+    pub next_screen: CurrentScreen,
     pub fname_input: String,
     file: Option<BufWriter<File>>,
 }
@@ -37,16 +40,12 @@ impl FileState {
             None => Ok(()),
         }
     }
-}
 
-// #[allow(unused_variables, unused_mut)]
-// let mut tmp_file: BufWriter<File> = create_tmp_file().unwrap();
-// tmp_file.write_all(b"tedt").unwrap();
-// tmp_file.flush().unwrap();
-// let mut tmp_file = match create_tmp_file() {
-//     Some(file) => file,
-//     None => {
-//         println!("Failed to create temporary file for JSON storage");
-//         restore_terminal(terminal)?;
-//     }
-// };
+    pub fn remove_file(&mut self) {
+        let file = self.file.take();
+        file.expect("Function is only called if a file exists")
+            .flush()
+            .unwrap();
+        std::fs::remove_file(&self.fname_input).unwrap();
+    }
+}

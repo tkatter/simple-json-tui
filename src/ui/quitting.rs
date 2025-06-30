@@ -21,7 +21,6 @@ pub fn render_quitting_screen(frame: &mut Frame<'_>, app: &mut App, file_state: 
                 Span::from(format!("Quit and save to {}", file_state.fname_input)),
             ])
             .style(Style::new().fg(ColorScheme::Green.v())),
-            Line::default(),
             Line::from(vec![
                 Span::from("N"),
                 Span::raw("  "),
@@ -37,14 +36,12 @@ pub fn render_quitting_screen(frame: &mut Frame<'_>, app: &mut App, file_state: 
                 Span::from("Quit and print buffer as stdout"),
             ])
             .style(Style::new().fg(ColorScheme::Green.v())),
-            Line::default(),
             Line::from(vec![
                 Span::from("F"),
                 Span::raw("  "),
                 Span::from("Save to a file"),
             ])
             .style(Style::new().fg(ColorScheme::Yellow.v())),
-            Line::default(),
             Line::from(vec![
                 Span::from("N"),
                 Span::raw("  "),
@@ -65,10 +62,12 @@ pub fn render_quitting_screen(frame: &mut Frame<'_>, app: &mut App, file_state: 
     let popup_outer_block = Block::bordered().border_type(BorderType::Rounded);
 
     let list = List::new(list_items)
-        .highlight_style(Style::new().fg(ColorScheme::Green.v()))
+        .highlight_style(Style::default())
         .highlight_symbol("\u{1F836} ")
         .highlight_spacing(HighlightSpacing::Always)
         .repeat_highlight_symbol(true);
+
+    app.quitting_screen.list_size = list.len();
 
     let popup = SelectionPopUp::new(&list, popup_outer_block, 20);
 

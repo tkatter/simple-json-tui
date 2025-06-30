@@ -2,6 +2,7 @@ use crate::ratatui::widgets::ListState;
 
 #[derive(Debug)]
 pub struct SelectionScreen {
+    pub list_size: usize,
     pub options: Vec<&'static str>,
     pub state: ListState,
 }
@@ -11,6 +12,7 @@ impl Default for SelectionScreen {
         Self {
             options: vec!["String", "Number", "Bool", "Object", "Array"],
             state: ListState::default(),
+            list_size: 5,
         }
     }
 }

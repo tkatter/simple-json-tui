@@ -1,11 +1,9 @@
-use ratatui::style::Modifier;
-
 use crate::{
     App, CurrentScreen, FileState,
     ratatui::{
         Frame,
         layout::{Alignment, Constraint},
-        style::Style,
+        style::{Modifier, Style},
         text::{Span, Text},
         widgets::{Block, BorderType, Clear, Paragraph},
     },
