@@ -14,7 +14,7 @@ use crate::{
     App, CurrentScreen, FileState,
     ratatui::{
         Frame,
-        layout::{Constraint, Direction, Layout, Rect},
+        layout::{Constraint, Direction, Layout},
         style::Style,
         widgets::{Block, Clear},
     },
@@ -25,29 +25,6 @@ use crate::{
         start::render_start_screen, theme::ColorScheme,
     },
 };
-
-// helper function to create a centered rect using up certain percentage of the available rect `r`
-fn _centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
-    // cut the given rect into three vertical pieces
-    let popup_layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Percentage((100 - percent_y) / 2),
-            Constraint::Percentage(percent_y),
-            Constraint::Percentage((100 - percent_y) / 2),
-        ])
-        .split(r);
-
-    // cut the middle piece into three width-wise pieces
-    Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage((100 - percent_x) / 2),
-            Constraint::Percentage(percent_x),
-            Constraint::Percentage((100 - percent_x) / 2),
-        ])
-        .split(popup_layout[1])[1]
-}
 
 pub fn ui(frame: &mut Frame, app: &mut App, file_state: &mut FileState) {
     // SET A BACKGROUND COLOR FOR THE ENTIRE FRAME
@@ -108,25 +85,4 @@ pub fn ui(frame: &mut Frame, app: &mut App, file_state: &mut FileState) {
 
     // EXIT POPUP
     render_quitting_screen(frame, app, file_state);
-    // if let CurrentScreen::Quitting = app.current_screen {
-    //     // clear frame
-    //     frame.render_widget(Clear, frame.area());
-    //
-    //     let popup_block = Block::default()
-    //         .title("Y/N")
-    //         .borders(Borders::NONE)
-    //         .style(Style::default().bg(Color::DarkGray));
-    //
-    //     let exit_text = Text::styled(
-    //         "Would you like to output the buffer as JSON?",
-    //         Style::default().fg(Color::Red),
-    //     );
-    //
-    //     let exit_paragraph = Paragraph::new(exit_text)
-    //         .block(popup_block)
-    //         .wrap(Wrap { trim: false });
-    //
-    //     let area = centered_rect(60, 25, frame.area());
-    //     frame.render_widget(exit_paragraph, area);
-    // }
 }

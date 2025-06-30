@@ -12,9 +12,6 @@ impl ObjectValues {
     pub fn add_key(&mut self, key: &str) {
         self.key = key.to_string();
     }
-    pub fn remove_entry(&mut self, key: &str) {
-        self.values.remove(key);
-    }
 }
 
 impl UpdateMap for ObjectValues {

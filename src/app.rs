@@ -6,12 +6,11 @@ use state_structs::{arr::ArrayValues, editing_preview::EditingPreview, obj::Obje
 use std::collections::HashMap;
 
 use crate::{
+    app::state_structs::quitting::QuittingScreen,
     file_state::FileState,
     ratatui::crossterm::event::{KeyEvent, KeyModifiers},
     traits::UpdateMap,
 };
-
-// use std::{fs::File, io::BufWriter};
 
 #[derive(Default)]
 pub enum CurrentScreen {
@@ -52,8 +51,7 @@ pub struct App {
     pub object_values: ObjectValues,
     pub selection_screen: SelectionScreen,
     pub editing_preview: EditingPreview,
-    // TODO: Build Mutex file/thread/async handling flow
-    // pub tmp_path: BufWriter<File>
+    pub quitting_screen: QuittingScreen,
 }
 
 impl App {
@@ -70,6 +68,7 @@ impl App {
             array_values: ArrayValues::default(),
             selection_screen: SelectionScreen::default(),
             editing_preview: EditingPreview::default(),
+            quitting_screen: QuittingScreen::default(),
         }
     }
 
@@ -251,13 +250,6 @@ impl App {
     }
 
     pub fn handle_escape(&mut self) {
-        // self.value_type = ValueType::default();
-        // self.value_input = String::new();
-        // self.key_input = String::new();
-        // self.editing_preview = EditingPreview::default();
-        // self.current_screen = CurrentScreen::default();
-        // self.currently_editing = None;
-        // self.array_values = ArrayValues::default();
         *self = Self {
             pairs: self.pairs.to_owned(),
             ..Self::default()
@@ -292,7 +284,7 @@ impl App {
         }
     }
 
-    pub fn print_json(&self) -> serde_json::Result<()> {
+    pub fn _print_json(&self) -> serde_json::Result<()> {
         let output = serde_json::to_string_pretty(&self.pairs)?;
         println!("{}", output);
         Ok(())

@@ -10,8 +10,4 @@ impl ArrayValues {
     pub fn push_value(&mut self, value: serde_json::Value) {
         self.values.push(value);
     }
-
-    // pub fn reset(&mut self) {
-    //     self.values = Vec::new()
-    // }
 }

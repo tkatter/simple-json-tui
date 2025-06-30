@@ -33,6 +33,8 @@ use app::{
 use file_state::FileState;
 use ui::ui;
 
+use crate::app::screens::match_quitting_screen;
+
 #[allow(unused)]
 const TMP_JSON_FILE: &str = "tmp_json_file.json";
 
@@ -131,15 +133,12 @@ fn run_app<B: Backend>(
                 CurrentScreen::Editing(ValueType::Object) if key.kind == KeyEventKind::Press => {
                     match_object_editing(&key, app)
                 }
-                CurrentScreen::Quitting => match key.code {
-                    KeyCode::Char('y') | KeyCode::Enter | KeyCode::Tab => {
-                        return Ok(true); // signal to print JSON
+                CurrentScreen::Quitting if key.kind == KeyEventKind::Press => {
+                    match match_quitting_screen(&key, app) {
+                        Ok(b) => return Ok(b),
+                        Err(e) => return Err(e),
                     }
-                    KeyCode::Char('n') | KeyCode::Char('q') | KeyCode::Esc => {
-                        return Ok(false); // signal to not print JSON
-                    }
-                    _ => {}
-                },
+                }
                 _ => {}
             }
         }
