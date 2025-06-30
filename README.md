@@ -7,7 +7,7 @@ A simple quality of life TUI application to make writing JSON less of a headache
 **Priority**
 
 - [ ] Implement nested objects
-- [ ] Implement the Null JSON type
+- [x] Implement the Null JSON type
 
 ---
 
